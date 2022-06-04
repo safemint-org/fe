@@ -8,7 +8,10 @@ import { Card } from 'antd';
 const Home: React.FC = () => {
 
     return (
-        <PageContainer>
+        <PageContainer header={{
+            title: '',
+            breadcrumb: {},
+        }}>
             <Card>
                 <ImageUploader />
             </Card>

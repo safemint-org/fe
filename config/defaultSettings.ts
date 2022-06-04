@@ -5,16 +5,15 @@ const Settings: LayoutSettings & {
   logo?: string;
 } = {
   navTheme: 'light',
-  // 拂晓蓝
-  primaryColor: '#1890ff',
+  primaryColor: '#44B446',
   layout: 'top',
-  contentWidth: 'Fixed',
+  contentWidth: 'Fluid',
   fixedHeader: false,
   fixSiderbar: true,
   colorWeak: false,
-  title: 'safemint',
+  title: '',
   pwa: false,
-  logo: 'https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg',
+  logo: 'https://img.js.design/assets/img/6280bb57898b9a0128079d88.png',
   iconfontUrl: '',
 };
 

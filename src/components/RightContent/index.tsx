@@ -1,8 +1,8 @@
-import { Space, Button, Input } from 'antd';
-import { QuestionCircleOutlined, LogoutOutlined } from '@ant-design/icons';
+import { Space, Button, Input, Switch } from 'antd';
+import { QuestionCircleOutlined, LogoutOutlined, CloseOutlined, CheckOutlined } from '@ant-design/icons';
 import { useState, useEffect } from 'react'
 import React from 'react';
-import { useModel, SelectLang } from 'umi';
+import { useModel, SelectLang, setLocale, getLocale } from 'umi';
 import HeaderSearch from '../HeaderSearch';
 import styles from './index.less';
 import { ethers } from "ethers";
@@ -15,6 +15,10 @@ import { NETWORKS } from "@/constants/networks"
 import { IAssetData } from "@/helpers/types";
 import { ellipseAddress } from "@/utils/utils";
 import HeaderDropdown from '../HeaderDropdown';
+import SelectIcon from './SelectIcon';
+import { SearchOutlined } from '@ant-design/icons';
+import defaultSettings from '../../../config/defaultSettings';
+
 
 
 // import Account from '@/components/RightContent/Account'
@@ -55,7 +59,7 @@ const INITIAL_STATE: IAppState = {
 const { Search } = Input;
 
 const GlobalHeaderRight: React.FC = () => {
-  const { initialState } = useModel('@@initialState');
+  const { initialState, setInitialState } = useModel('@@initialState');
   const [state, setState] = useState({
     ...INITIAL_STATE
   });
@@ -97,12 +101,13 @@ const GlobalHeaderRight: React.FC = () => {
     };
   }
   const getNetwork = (id) => NETWORKS[id].name
+  console.log('id', getNetwork(state.chainId))
   const web3Modal = new Web3Modal({
     network: getNetwork(state.chainId),
     cacheProvider: true,
     providerOptions: getProviderOptions()
   });
-
+  // web3Modal.clearCachedProvider()
   if (!initialState || !initialState.settings) {
     return null;
   }
@@ -151,17 +156,37 @@ const GlobalHeaderRight: React.FC = () => {
     },
   ];
 
-  const onSearch = () => {
-
+  const onChangeDark = async () => {
+    await setInitialState((s) => ({
+      ...s,
+      settings: { ...initialState.settings, navTheme: navTheme == 'realDark' ? 'light' : 'realDark' },
+    }));
   }
 
   const menuHeaderDropdown = (
     <Menu className={styles.menu} selectedKeys={[]} onClick={clear} items={menuItems} />
   );
 
+  const itemClick = (item) => {
+    console.log('item', item)
+    setLocale(item.key, false);
+  }
+
   return (
     <Space className={className}>
-      {/* <Search placeholder="input search text" onSearch={onSearch} style={{ width: 200 }} /> */}
+      <Input
+        placeholder="Search a case"
+        className={styles.affixWrapper}
+        suffix={
+          <SearchOutlined style={{ color: 'rgba(0,0,0,.45)' }} />
+        }
+      />
+      <Switch
+        checkedChildren={<CheckOutlined />}
+        unCheckedChildren={<CloseOutlined />}
+        onChange={onChangeDark}
+        defaultChecked
+      />
       {state.address && (
         (<HeaderDropdown overlay={menuHeaderDropdown}>
           <span className={`${styles.action} ${styles.account}`}>
@@ -171,34 +196,7 @@ const GlobalHeaderRight: React.FC = () => {
         </HeaderDropdown>))}
 
       {!state.address && (<Button onClick={onLoade}> Connect </Button>)}
-
-      <HeaderSearch
-        className={`${styles.action} ${styles.search}`}
-        placeholder="站内搜索"
-        defaultValue="umi ui"
-        options={[
-          { label: <a href="https://umijs.org/zh/guide/umi-ui.html">umi ui</a>, value: 'umi ui' },
-          {
-            label: <a href="next.ant.design">Ant Design</a>,
-            value: 'Ant Design',
-          },
-          {
-            label: <a href="https://protable.ant.design/">Pro Table</a>,
-            value: 'Pro Table',
-          },
-          {
-            label: <a href="https://prolayout.ant.design/">Pro Layout</a>,
-            value: 'Pro Layout',
-          },
-        ]}
-        onSearch={value => {
-          console.log('input', value);
-        }}
-      />
-
-
-
-      <SelectLang className={styles.action} />
+      <SelectLang onItemClick={itemClick} icon={<SelectIcon iconName='zh-CN' />} />
     </Space>
   );
 };
