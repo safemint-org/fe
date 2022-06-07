@@ -14,6 +14,11 @@
     redirect: '/submit',
   },
   {
+    path: '/preview',
+    name: 'preview',
+    component: './Preview',
+  },
+  {
     component: './404',
   },
 ];
