@@ -7,3 +7,9 @@ export const FlexView = styled.div`
 export const FlexViewCenter = styled(FlexView)`
    justify-content:center;
 `
+export const BaseInput = styled.input`
+  outline: none;
+  outline:none;
+  border:none;
+  background:transparent;
+`

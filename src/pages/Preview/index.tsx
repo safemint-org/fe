@@ -4,7 +4,7 @@ import styles from './index.less';
 import ImageCommon from "@/assets/common";
 import styled from 'styled-components'
 import {autoWidthVW} from "@/utils/utils";
-import {FlexView, FlexViewCenter} from "@/components/Common";
+import {BaseInput, FlexView, FlexViewCenter} from "@/components/Common";
 
 export default function Preview(){
   return(
@@ -104,8 +104,38 @@ export default function Preview(){
                   <PropertyBtn>WHITELIST ONLY</PropertyBtn>
                 </div>
               </PropertyContainer>
+              <div>
+                <FuncName>BanaceOf</FuncName>
+                <FuncDesc>Function description is here.
+                  Function description is here.</FuncDesc>
+                <FuncInfo>
+                  <Btn>Safemint</Btn>
+                  <div>
+                    <PriceLable>Mint Price：</PriceLable>
+                    <Price>1ETH</Price>
+                  </div>
+                </FuncInfo>
+              </div>
+              <div>
+                <FuncName>BanaceOf</FuncName>
+                <FuncDesc>Function description is here.
+                  Function description is here.</FuncDesc>
+              </div>
+              <div>
+                <FuncName>BanaceOf</FuncName>
+                <FuncInput
+                  placeholder={"Input Quantity"}
+                ></FuncInput>
+                <FuncInfo>
+                  <Btn>Safemint</Btn>
+                  <div>
+                    <PriceLable>Mint Price：</PriceLable>
+                    <Price>1ETH</Price>
+                  </div>
+                </FuncInfo>
+              </div>
             </MainContent>
-            <Flag></Flag>
+
           </Content>
         </Col>
       </Row>
@@ -219,4 +249,57 @@ const Flag = styled.div`
   border-bottom: 1px solid rgba(166, 166, 166, 1);
   margin-top: ${autoWidthVW(20)};
   margin-bottom: ${autoWidthVW(10)};
+`
+const FuncName = styled.div`
+  color: rgba(0, 0, 0, 0.85);
+  font-size: ${autoWidthVW(18)};
+  line-height: ${autoWidthVW(30)};
+  margin-top: ${autoWidthVW(20)};
+  border-bottom: 1px solid rgba(166, 166, 166, 1);
+`
+const FuncDesc = styled.div`
+  color: rgba(128, 128, 128, 1);
+  font-size: ${autoWidthVW(16)};
+  line-height: ${autoWidthVW(30)};
+`
+const Btn = styled(Row).attrs({
+  justify:"center",
+  align:"middle"
+})`
+  width:fit-content;
+  width: ${autoWidthVW(120)};
+  //height: ${autoWidthVW(22)};
+  background: rgba(3, 101, 31, 1);
+  border-radius: 2px;
+  color: rgba(255, 255, 255, 1);
+  font-size: ${autoWidthVW(18)};
+  line-height:${autoWidthVW(30)};
+  margin-right:${autoWidthVW(30)};
+  cursor: pointer;
+`
+const FuncInfo = styled(Row).attrs({
+  align:"middle"
+})`
+  margin-top:${autoWidthVW(10)};
+`
+const PriceLable = styled.span`
+  color: rgba(128, 128, 128, 1);
+  font-size: ${autoWidthVW(12)};
+  line-height:${autoWidthVW(22)};
+  margin-right:${autoWidthVW(5)};
+`
+const Price = styled.span`
+  color: rgba(0, 0, 0, 1);
+  font-size: ${autoWidthVW(16)};
+  line-height:${autoWidthVW(22)};
+`
+const FuncInput = styled(BaseInput)`
+  width: ${autoWidthVW(120)};
+  background: rgba(255, 255, 255, 1);
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 2px;
+  color: rgba(0, 0, 0, 0.25);
+  font-size: ${autoWidthVW(16)};
+  line-height:${autoWidthVW(20)};
+  margin-top:${autoWidthVW(10)};
 `
