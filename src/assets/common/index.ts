@@ -1,4 +1,5 @@
 import ETH from './ETH.png';
+import banner_explore from './banner_explore.png';
 import banner_preview from './banner_preview.png';
 import bg_btn_mint from './bg_btn_mint.png';
 import discord from './discord.png';
@@ -10,6 +11,7 @@ import website from './website.png';
 
 const ImageCommon: any = {
 ETH,
+banner_explore,
 banner_preview,
 bg_btn_mint,
 discord,

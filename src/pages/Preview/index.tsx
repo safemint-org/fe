@@ -244,6 +244,7 @@ const PropertyBtn = styled(FlexViewCenter)`
   color: rgba(56, 56, 56, 1);
   font-size: ${autoWidthVW(12)};
   line-height: 22px;
+  cursor: pointer;
 `
 const Flag = styled.div`
   border-bottom: 1px solid rgba(166, 166, 166, 1);

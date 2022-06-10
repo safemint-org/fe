@@ -19,6 +19,11 @@
     component: './Preview',
   },
   {
+    path: '/explore',
+    name: 'explore',
+    component: './Explore',
+  },
+  {
     component: './404',
   },
 ];
