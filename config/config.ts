@@ -47,12 +47,13 @@ export default defineConfig({
   // https://umijs.org/plugins/plugin-esbuild
   esbuild: {},
   title: false,
+  fastRefresh: {},
   ignoreMomentLocale: true,
   manifest: {
     basePath: '/',
   },
   // Fast Refresh 热更新
-  fastRefresh: {},
+  // fastRefresh: {},
   // openAPI: [
   //   {
   //     requestLibPath: "import { request } from 'umi'",

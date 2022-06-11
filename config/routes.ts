@@ -2,7 +2,7 @@
   {
     path: '/home',
     name: 'home',
-    component: './Home',
+    component: './home',
   },
   {
     path: '/submit',

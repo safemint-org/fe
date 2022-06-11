@@ -4,6 +4,7 @@ import { Button, Col, message, Row, Space, Upload } from 'antd'
 import { ThemeContext } from '@/contexts/themeContext'
 import { useContext, useLayoutEffect, useState } from 'react'
 import { ipfsCidUrl, pinFileToIpfs } from '@/utils/ipfs'
+import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
 
 import ExternalLink from './ExternalLink'
 
@@ -17,13 +18,13 @@ export default function ImageUploader({
   onSuccess,
   maxSizeKBs: maxSize,
   metadata,
-  text,
+  title
 }: {
   initialUrl?: string
   metadata?: Record<string | number, any> // eslint-disable-line @typescript-eslint/no-explicit-any
   onSuccess?: (url?: string) => void
   maxSizeKBs?: number // KB
-  text?: string
+  title?: string
 }) {
   const [url, setUrl] = useState<string | undefined>(initialUrl)
   const [loadingUpload, setLoadingUpload] = useState<boolean>()
@@ -36,6 +37,13 @@ export default function ImageUploader({
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     onSuccess && onSuccess(newUrl)
   }
+
+  const uploadButton = (
+    <div>
+      {loadingUpload ? <LoadingOutlined /> : <PlusOutlined />}
+      <div style={{ marginTop: 8 }}>{title}</div>
+    </div>
+  );
 
   useLayoutEffect(() => setUrl(initialUrl), [initialUrl])
 
@@ -71,6 +79,7 @@ export default function ImageUploader({
           ) : (
             <Upload
               accept="image/png, image/jpeg, image/jpg, image/gif"
+              listType="picture-card"
               beforeUpload={file => {
                 if (maxSize !== undefined && file.size > maxSize * 1000) {
                   const unit = maxSize > 999 ? ByteUnit.MB : ByteUnit.KB
@@ -90,27 +99,15 @@ export default function ImageUploader({
                 setValue(res.IpfsHash)
                 setLoadingUpload(false)
               }}
+              className="avatar-uploader"
             >
-              <Button loading={loadingUpload} type="text">
+              {/* <Button loading={loadingUpload} type="text">
                 <FileImageOutlined /> {text ?? null}
-              </Button>
+              </Button> */}
+              {uploadButton}
             </Upload>
           )}
         </Space>
-      </Col>
-
-      <Col xs={24} md={17}>
-        {url?.length ? (
-          <span
-            style={{
-              fontSize: '.7rem',
-              wordBreak: 'break-all',
-              textOverflow: 'ellipsis',
-            }}
-          >
-            Uploaded to: <ExternalLink href={url}>{url}</ExternalLink>
-          </span>
-        ) : null}
       </Col>
     </Row>
   )

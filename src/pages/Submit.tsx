@@ -1,10 +1,26 @@
 import React, { useRef, useState } from 'react';
+import type { FC } from 'react';
 import type { FormInstance } from 'antd';
-import { Card, Result, Button, Descriptions, Divider, Alert, Statistic } from 'antd';
+import { Card, Result, Form, Input, Button, Descriptions, Divider, Alert, Statistic, Row, Col } from 'antd';
 import ImageUploader from '@/components/RightContent/ImageUploader'
-import ProForm, { ProFormDigit, ProFormSelect, ProFormText, StepsForm, ProFormTextArea } from '@ant-design/pro-form';
-import type { StepDataType } from './data.d'
+import ProForm, { ProFormDigit, ProFormSelect, ProFormUploadButton, ProFormText, StepsForm, ProFormTextArea, ProFormSwitch, ProFormDateTimePicker } from '@ant-design/pro-form';
+import type { StepDataType } from './data'
 import styles from './Submit.less';
+import { TwitterSquareFilled } from '@ant-design/icons';
+import IconFont from '@/constants/icon/index';
+
+export type ProjectInfoFormFields = {
+  name: string
+  description: string
+  infoUri: string
+  logoUri: string
+  twitter: string
+  discord: string
+  payButton: string
+  payDisclosure: string
+  version: number
+}
+
 
 const StepDescriptions: React.FC<{
   stepData: StepDataType;
@@ -81,11 +97,17 @@ const submit: React.FC = () => {
         onCurrentChange={setCurrent}
         submitter={{
           render: (props, dom) => {
+            if (props.step === 0) {
+              return <Button type="primary" onClick={() => props.onSubmit?.()}>
+                NEXT: File Function
+              </Button>
+            }
             if (props.step === 2) {
               return null;
             }
             return dom;
           },
+
         }}
       >
         <StepsForm.StepForm<StepDataType>
@@ -99,41 +121,84 @@ const submit: React.FC = () => {
             return true;
           }}
         >
-          <ProFormText
-            colProps={{ md: 12, xl: 8 }}
-            label="Project Name"
-            width="md"
-            name="payAccount"
-            rules={[{ required: true, message: '请选择付款账户' }]}
-          />
+          <div className={styles.submit1}>
+            <Form.Item label="Logo">
+              <ImageUploader title='Upload' />
+            </Form.Item>
 
-          <ProFormTextArea
-            label="Project Description"
-            width="md"
-            name="receiverName"
-          />
-          <ProFormSelect
-            options={[
-              {
-                value: 'Ethereum',
-                label: 'Ethereum',
-              }
-            ]}
-            width="md"
-            name="taxRate"
-            label="Operating Chain"
-          />
-          <ProFormText
-            label="Contract Address"
-            name="amount"
-            width="md"
-          />
-          <ProFormText
-            colProps={{ md: 12, xl: 8 }}
-            label="Total Supply"
-            width="md"
-            name=""
-          />
+            <Form.Item label="Project Banner">
+              <ImageUploader title="Upload Banner" />
+            </Form.Item>
+
+            {/* <Upload /> */}
+            <ProFormText
+              colProps={{ md: 12, xl: 8 }}
+              label="Project Name"
+              width="md"
+              name="payAccount"
+              rules={[{ required: true, message: '' }]}
+            />
+
+            <ProFormTextArea
+              label="Project Description"
+              width="md"
+              name="receiverName"
+            />
+            <ProFormSelect
+              options={[
+                {
+                  value: 'Ethereum',
+                  label: 'Ethereum',
+                }
+              ]}
+              rules={[{ required: true, message: '' }]}
+              width="md"
+              name="taxRate"
+              label="Operating Chain"
+            />
+            <ProFormText
+              label="Contract Address"
+              rules={[{ required: true, message: '' }]}
+              name="amount"
+              width="md"
+            />
+            <Form.Item label="Account Info">
+
+              <Row align="middle" style={{ margin: '8px 0' }}>
+                <Col span={2}><TwitterSquareFilled style={{ fontSize: '23px' }} /></Col>
+                <Col span={8}><Input placeholder="Basic usage" size="small" /></Col>
+              </Row>
+              <Row align="middle" style={{ margin: '17px 0' }}>
+                <Col span={2}><TwitterSquareFilled style={{ fontSize: '23px' }} /></Col>
+                <Col span={8}><Input placeholder="Basic usage" size="small" /></Col>
+              </Row>
+              <Row align="middle" style={{ margin: '17px 0' }}>
+                <Col span={2}><TwitterSquareFilled style={{ fontSize: '23px' }} /></Col>
+                <Col span={8}><Input placeholder="Basic usage" size="small" /></Col>
+              </Row>
+            </Form.Item>
+            <ProFormText
+              colProps={{ md: 12, xl: 8 }}
+              label="Total Supply"
+              width="md"
+              name=""
+            />
+            <ProFormText
+              colProps={{ md: 12, xl: 8 }}
+              label="Max Amount per address"
+              width="md"
+              name=""
+            />
+            <ProFormSwitch name="switch" label="Refundable" />
+            <ProFormDateTimePicker
+              name="dateTime"
+              label="Start Time"
+              fieldProps={{
+                format: (value) => value.format('YYYY-MM-DD'),
+              }}
+            />
+          </div>
+
         </StepsForm.StepForm>
 
         <StepsForm.StepForm title="Mint Function">
@@ -167,7 +232,7 @@ const submit: React.FC = () => {
         </StepsForm.StepForm>
       </StepsForm>
       {/* <Divider style={{ margin: '40px 0 24px' }} /> */}
-    </Card>
+    </Card >
   );
 
   // return (
