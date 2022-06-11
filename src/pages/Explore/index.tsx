@@ -1,18 +1,20 @@
-import {Card, Col, Row, Image, Progress} from "antd";
+import {Card, Col, Row, Image, Progress, Checkbox, Menu, Space, Dropdown, Button} from "antd";
 
 import ImageCommon from "@/assets/common";
 import styled from 'styled-components'
 import {autoWidthVW} from "@/utils/utils";
 import {BaseInput, FlexView, FlexViewCenter} from "@/components/Common";
-
+import {DownOutlined, UserOutlined} from "@ant-design/icons";
+require("./index.less")
 export default function Explore(){
   return(
     <Container>
       <H1>Explore Projects</H1>
+      <SortComponent></SortComponent>
       <ItemContainer>
-        <Item></Item>
-        <Item></Item>
-        <Item></Item>
+        <a href="/preview"><Item></Item></a>
+        <a href="/preview"><Item></Item></a>
+          <a href="/preview"><Item></Item></a>
       </ItemContainer>
 
     </Container>
@@ -91,6 +93,45 @@ function Item(){
     </Content>
   )
 }
+function SortComponent(){
+  const menu = (
+    <Menu
+      // onClick={handleMenuClick}
+      items={[
+        {
+          label: 'Latest',
+          key: '1',
+        },
+      ]}
+    />
+  );
+  return(
+    <SortContainer
+      justify={"end"}
+      align={"middle"}
+    >
+      <Checkbox>Have whitelist</Checkbox>
+      <PriceRange>Price Range :</PriceRange>
+      <PriceInput
+        placeholder={"Min"}
+      ></PriceInput>
+      <PriceFlag>-</PriceFlag>
+      <PriceInput
+        placeholder={"Max"}
+      ></PriceInput>
+      <Set>Set</Set>
+      <PriceRange>Sort :</PriceRange>
+      <Dropdown overlay={menu}>
+        <Button>
+          <Space>
+            Latest
+            <DownOutlined />
+          </Space>
+        </Button>
+      </Dropdown>
+    </SortContainer>
+  )
+}
 function NotLive(){
   return(
     <Row
@@ -117,6 +158,11 @@ function ProgressBar(){
     </Row>
   )
 }
+const SortContainer = styled(Row)`
+  border-bottom: 1px solid rgba(166, 166, 166, 1);
+  padding-bottom: ${autoWidthVW(15)};
+  margin-bottom: ${autoWidthVW(35)};
+`
 const BottomContainer = styled(Row)`
   margin-top:${autoWidthVW(15)};
 `
@@ -279,4 +325,32 @@ const Btn = styled(Row).attrs({
   line-height:${autoWidthVW(30)};
   //margin-right:${autoWidthVW(30)};
   cursor: pointer;
+`
+const PriceRange = styled.div`
+  color: rgba(0, 0, 0, 0.85);
+  font-size: ${autoWidthVW(14)};
+  line-height: ${autoWidthVW(22)};
+  margin-left: ${autoWidthVW(40)};
+  margin-right: ${autoWidthVW(10)};
+`
+const PriceInput = styled(BaseInput)`
+  width: ${autoWidthVW(61)};
+  height: ${autoWidthVW(25)};
+  background: rgba(255, 255, 255, 1);
+  border: 0.6px solid rgba(0, 0, 0, 0.15);
+  border-radius: 2px;
+  text-align: center;
+  margin:0 ${autoWidthVW(10)};
+`
+const PriceFlag = styled.div`
+  color: rgba(0, 0, 0, 0.8);
+  font-size: ${autoWidthVW(12)};
+  line-height: ${autoWidthVW(22)};
+
+`
+const Set = styled.div`
+  color: rgba(40, 233, 95, 1);
+  font-size: ${autoWidthVW(10)};
+  line-height: ${autoWidthVW(22)};
+  cursor:pointer;
 `

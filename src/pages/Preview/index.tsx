@@ -1,14 +1,19 @@
 import {Card, Col, Row,Image} from "antd";
 
-import styles from './index.less';
+const styles = require("./index.less")
 import ImageCommon from "@/assets/common";
 import styled from 'styled-components'
 import {autoWidthVW} from "@/utils/utils";
 import {BaseInput, FlexView, FlexViewCenter} from "@/components/Common";
 
-export default function Preview(){
+interface IPreview {
+  isComponent?:boolean;
+}
+export default function Preview({isComponent}:IPreview){
   return(
-      <Row>
+      <Row
+        style={{background:"#FFFFFF"}}
+      >
         <Col span={24}>
           <Image
             className={styles.image_header}
@@ -19,8 +24,8 @@ export default function Preview(){
           />
         </Col>
         <Col
-          span={10}
-          offset={6}
+          span={isComponent?24:10}
+          offset={isComponent?0:6}
         >
           <Content>
             <MainContent>
