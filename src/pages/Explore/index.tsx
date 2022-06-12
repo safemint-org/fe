@@ -8,11 +8,7 @@ import {DownOutlined, UserOutlined} from "@ant-design/icons";
 import {useTrendingProjects} from "@/hooks/Projects";
 require("./index.less")
 export default function Explore(){
-  const { data: projects, isLoading } = useTrendingProjects(
-    12,
-    7,
-  )
-  console.log(projects)
+  useTrendingProjects()
   return(
     <Container>
       <H1>Explore Projects</H1>
