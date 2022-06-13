@@ -12,6 +12,7 @@ import { ProjectInfo, ProjectFunction } from "@/helpers/types";
 import IconFont from '@/constants/icon/index';
 import { values } from 'lodash';
 import { DefaultOptionType } from 'antd/lib/select';
+import Preview from './Preview/index';
 
 export type ProjectInfoFormFields = {
   name: string
@@ -353,6 +354,9 @@ const submit: React.FC = () => {
           </StepResult>
         </StepsForm.StepForm>
       </StepsForm>
+      {/* <div className={styles.submitPreview} >
+        <Preview data={stepData} />
+      </div> */}
       {/* <Divider style={{ margin: '40px 0 24px' }} /> */}
     </Card >
   );

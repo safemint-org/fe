@@ -19,7 +19,6 @@ if (!pinata_api_key || !pinata_secret_api_key) {
 const pinata = pinataClient(pinata_api_key, pinata_secret_api_key);
 
 console.log('name', readNetwork.name);
-
 export const IPFS_TAGS = {
   [IpfsCacheName.trending]:
     (process.env.NODE_ENV === 'production' ? 'trending_projects_' : 'DEV_trending_projects_') +
