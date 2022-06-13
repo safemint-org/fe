@@ -5,7 +5,7 @@ import { Card } from 'antd';
 
 
 
-const Home: React.FC = () => {
+const home: React.FC = () => {
 
     return (
         <PageContainer header={{
@@ -19,4 +19,4 @@ const Home: React.FC = () => {
     );
 };
 
-export default Home;
+export default home;
