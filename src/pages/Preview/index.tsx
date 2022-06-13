@@ -111,7 +111,7 @@ export default function Preview({isComponent,data}:IPreview){
               <InfoContainer>
                 <div>
                   <InfoTitle>TOTAL SUPPLY</InfoTitle>
-                  <InfoDesc>{data.supply}</InfoDesc>
+                  <InfoDesc>{data?.supply}</InfoDesc>
                 </div>
                 <div>
                   <InfoTitle>AVAILABLE TO MINT</InfoTitle>
