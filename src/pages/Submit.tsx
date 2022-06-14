@@ -3,12 +3,13 @@ import type { FormInstance } from 'antd';
 import moment from 'moment';
 import { Card, message, Result, Form, Input, Button, Descriptions, Divider, Alert, Statistic, Row, Col } from 'antd';
 import ImageUploader from '@/components/RightContent/ImageUploader'
-import { ProForm, ProFormSelect, ProFormText, StepsForm, ProFormTextArea, ProFormSwitch, ProFormGroup, ProFormList, ProFormDateTimePicker } from '@ant-design/pro-form';
+import { ProForm, ProFormSelect, ProFormText, StepsForm, ProFormDependency, ProFormTextArea, ProFormSwitch, ProFormGroup, ProFormList, ProFormDateTimePicker } from '@ant-design/pro-form';
 import type { StepDataType } from './data'
-import styles from './Submit.less';
+import styles from './submit.less';
 import { TwitterSquareFilled } from '@ant-design/icons';
 import { request } from 'umi';
-import { ProjectInfo, ProjectFunction } from "@/helpers/types";
+import type { ProjectInfo } from "@/helpers/types";
+import { ProjectFunction } from "@/helpers/types";
 import IconFont from '@/constants/icon/index';
 import { values } from 'lodash';
 import { DefaultOptionType } from 'antd/lib/select';
@@ -82,6 +83,7 @@ const submit: React.FC = () => {
   const storageData = localStorage.getItem('safe-mint-dao')
   //const ABIFunctionArray: any[] = []
   const [ABIarry, setABIarry] = useState([]);
+  const [loading, setLoading] = useState(false)
   const [paramsArray, setparamsArray] = useState([]);
   const [stepData, setStepData] = useState<ProjectInfo>(storageData ? JSON.parse(storageData) : {
     logol: '',
@@ -98,9 +100,44 @@ const submit: React.FC = () => {
     peraddress: '',
     time: moment().format('YYYY-MM-DD HH:mm:ss'),
     refundable: false,
-    functions: [],
+    functions: [{
+      name: '',
+      free: false,
+      price: '',
+      param: '',
+      description: '',
+      whitelister: false
+    }],
     current: 0
   });
+
+  const currentChange = async (cur: React.SetStateAction<number>) => {
+    if (cur == 1) {
+      setLoading(true)
+      const data = await request(`https://api-moonbeam.moonscan.io/api?module=contract&action=getabi&address=${stepData.address}&apikey=YourApiKeyToken`)
+      if (data.message !== 'OK') {
+        message.error('调用合约失败，请检查合约地址');
+        return false;
+      }
+      message.success('合约获取成功')
+      const abi = JSON.parse(data?.result);
+      const array = []
+      for (const i in abi) {
+        if (abi[i].type == "function" && abi[i].stateMutability.includes('payable')) {
+          const func = abi[i];
+          const paramsArray = []
+          for (const j in func.inputs) paramsArray.push(func.inputs[j].name)
+          array.push({ label: func.name, value: func.name, params: paramsArray })
+        }
+      }
+      setABIarry(array);
+      setLoading(false)
+    }
+    setCurrent(cur);
+    setStepData((obj) => {
+      return { ...obj, 'current': cur }
+    })
+  }
   useEffect(() => {
     const listener = (ev: { preventDefault: () => void; }) => {
       ev.preventDefault();
@@ -110,7 +147,7 @@ const submit: React.FC = () => {
     return () => {
       window.removeEventListener('beforeunload', listener)
     }
-  }, [stepData]);
+  }, [stepData, stepData.current]);
   const [current, setCurrent] = useState(stepData.current);
   const formRef = useRef<FormInstance>();
   const LAYOUT_TYPE_HORIZONTAL = 'horizontal';
@@ -123,28 +160,13 @@ const submit: React.FC = () => {
     })
   }
 
-  const currentChange = async (cur: React.SetStateAction<number>) => {
-    const data = await request(`https://api-moonbeam.moonscan.io/api?module=contract&action=getabi&address=${stepData.address}&apikey=YourApiKeyToken`)
-    if (data.message !== 'OK') {
-      message.error('调用合约失败，请检查合约地址');
-      return false;
-    }
-    message.success('合约获取成功')
-    const abi = JSON.parse(data?.result);
-    const array = []
-    for (const i in abi) {
-      if (abi[i].type == "function" && abi[i].stateMutability.includes('payable')) {
-        const func = abi[i];
-        const paramsArray = []
-        for (const j in func.inputs) paramsArray.push(func.inputs[j].name)
-        array.push({ label: func.name, value: func.name, params: paramsArray })
-      }
-    }
-    setABIarry(array);
-    setCurrent(cur);
-    setStepData((obj) => {
-      return { ...obj, 'current': current }
-    })
+  const handleFunctionChange = (index: any, key: any, value: any, ary: any) => {
+    setparamsArray(ary)
+    stepData.functions[index][key] = value
+  }
+
+  const handleFunctionBlue = (index: any, key: any, value: any) => {
+    stepData.functions[index][key] = value
   }
 
   return (
@@ -155,7 +177,7 @@ const submit: React.FC = () => {
         submitter={{
           render: (props, dom) => {
             if (props.step === 0) {
-              return <Button type="primary" onClick={() => props.onSubmit?.()}>
+              return <Button type="primary" loading={loading} onClick={() => props.onSubmit?.()}>
                 NEXT: File Function
               </Button>
             }
@@ -295,52 +317,54 @@ const submit: React.FC = () => {
 
         <StepsForm.StepForm title="Mint Function" layout={LAYOUT_TYPE_HORIZONTAL}>
           <div className={styles.submit2}>
-            <ProFormList name="users" initialValue={stepData.functions} itemRender={({ listDom, action }, { index }) => (
+            <ProFormList name="users" initialValue={stepData.functions} itemRender={({ listDom }, { index }) => (
               <Form.Item label={`function${index + 1}`}>
-                {listDom}
+                {/* {listDom} */}
+                <ProFormGroup>
+                  <div className={styles.submitOne}>
+                    <div className={styles.submitTitle}>Function Name</div>
+                    {/* <input name="name" /> */}
+                    <ProFormSelect
+                      name="name"
+                      placeholder="Name"
+                      options={ABIarry}
+                      fieldProps={{ onChange: (value, params) => handleFunctionChange(index, 'name', value, params?.params) }} />
+                  </div>
+                </ProFormGroup>
+                <ProFormGroup>
+                  <div>
+                    <div className={styles.submitTitle}>Free Mint?</div>
+                    {/* <input name="name" /> */}
+                    <ProFormSwitch name="free" fieldProps={{ onChange: (value) => handleFunctionBlue(index, 'free', value) }} />
+                  </div>
+                  <div>
+                    <div className={styles.submitTitle}>Mint Price</div>
+                    {/* <input name="name" /> */}
+                    <ProFormDependency name={['free']}>
+                      {({ free }) => {
+                        return <ProFormText disabled={!free} width={100} name="price" placeholder="Input Price" />
+                      }}
+                    </ProFormDependency>
+                    {/* <ProFormText width={100} name="price" placeholder="Input Price" /> */}
+                  </div>
+                  <div>
+                    <div className={styles.submitTitle}>For Mint Quantity</div>
+                    {/* <input name="name" /> */}
+                    <ProFormSelect width={110} name="param" options={paramsArray} fieldProps={{ onChange: (value) => handleFunctionBlue(index, 'param', value) }} placeholder="Param Name" />
+                  </div>
+                </ProFormGroup>
+                <div className={styles.submitDescription} >
+                  <ProFormTextArea name="description" label="Function Description" />
+                </div>
+                <div>
+                  <div className={styles.submitTitle}>Restrict only for whitelister?</div>
+                  {/* <input name="name" /> */}
+                  <ProFormSwitch fieldProps={{ onChange: (value) => handleFunctionBlue(index, 'whitelister', value) }} name="whitelister" />
+                </div>
               </Form.Item>
-
             )} creatorButtonProps={{
               creatorButtonText: 'Add More Functions',
-            }}>
-              <ProFormGroup>
-                <div className={styles.submitOne}>
-                  <div className={styles.submitTitle}>Function Name</div>
-                  {/* <input name="name" /> */}
-                  <ProFormSelect
-                    name="name"
-                    placeholder="Name"
-                    options={ABIarry}
-                    fieldProps={{ onChange: (value, params) => setparamsArray(params.params) }}
-                  />
-                </div>
-              </ProFormGroup>
-              <ProFormGroup>
-                <div>
-                  <div className={styles.submitTitle}>Free Mint?</div>
-                  {/* <input name="name" /> */}
-                  <ProFormSwitch name="free" />
-                </div>
-                <div>
-                  <div className={styles.submitTitle}>Mint Price</div>
-                  {/* <input name="name" /> */}
-                  <ProFormText width={100} name="price" placeholder="Input Price" />
-                </div>
-                <div>
-                  <div className={styles.submitTitle}>For Mint Quantity</div>
-                  {/* <input name="name" /> */}
-                  <ProFormSelect width={110} name="param" options={paramsArray} placeholder="Param Name" />
-                </div>
-              </ProFormGroup>
-              <div className={styles.submitDescription} >
-                <ProFormTextArea name="description" label="Function Description" />
-              </div>
-              <div>
-                <div className={styles.submitTitle}>Restrict only for whitelister?</div>
-                {/* <input name="name" /> */}
-                <ProFormSwitch name="whitelister" />
-              </div>
-            </ProFormList>
+            }} />
           </div>
         </StepsForm.StepForm>
 
