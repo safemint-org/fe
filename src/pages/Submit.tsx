@@ -82,6 +82,7 @@ const submit: React.FC = () => {
   const storageData = localStorage.getItem('safe-mint-dao')
   //const ABIFunctionArray: any[] = []
   const [ABIarry, setABIarry] = useState([]);
+  const [paramsArray, setparamsArray] = useState([]);
   const [stepData, setStepData] = useState<ProjectInfo>(storageData ? JSON.parse(storageData) : {
     logol: '',
     banner: '',
@@ -310,6 +311,7 @@ const submit: React.FC = () => {
                     name="name"
                     placeholder="Name"
                     options={ABIarry}
+                    fieldProps={{ onChange: (value, params) => setparamsArray(params.params) }}
                   />
                 </div>
               </ProFormGroup>
@@ -327,7 +329,7 @@ const submit: React.FC = () => {
                 <div>
                   <div className={styles.submitTitle}>For Mint Quantity</div>
                   {/* <input name="name" /> */}
-                  <ProFormSelect width={110} name="param" placeholder="Param Name" />
+                  <ProFormSelect width={110} name="param" options={paramsArray} placeholder="Param Name" />
                 </div>
               </ProFormGroup>
               <div className={styles.submitDescription} >
