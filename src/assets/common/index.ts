@@ -10,15 +10,15 @@ import user_icon from './user_icon.png';
 import website from './website.png';
 
 const ImageCommon: any = {
-ETH,
-banner_explore,
-banner_preview,
-bg_btn_mint,
-discord,
-icon_down,
-telegram,
-twitter,
-user_icon,
-website
-}
+  ETH,
+  banner_explore,
+  banner_preview,
+  bg_btn_mint,
+  discord,
+  icon_down,
+  telegram,
+  twitter,
+  user_icon,
+  website,
+};
 export default ImageCommon;
