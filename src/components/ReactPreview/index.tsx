@@ -16,13 +16,20 @@ const ReactPreview: React.FC<IPreview> = (props) => {
   return (
     <Row style={{ background: '#FFFFFF' }}>
       <Col span={24}>
-        <Image className={styles.image_header} preview={false} width={'100%'} src={data?.banner} />
+        <Image
+          className={styles.image_header}
+          preview={false}
+          width={'100%'}
+          src={data?.banner ? data?.banner : ImageCommon.banner_preview}
+        />
       </Col>
       <Col span={isComponent ? 24 : 10} offset={isComponent ? 0 : 6}>
         <Content>
           <MainContent>
             <Row justify={'center'}>
-              <UserIcon src={data?.logol}></UserIcon>
+              <UserIcon
+                src={data?.logol != undefined ? data?.logol : ImageCommon.user_icon}
+              ></UserIcon>
             </Row>
             <ContractInfo>
               <div></div>
