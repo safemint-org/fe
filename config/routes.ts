@@ -10,6 +10,17 @@
     component: './submit',
   },
   {
+    path: '/explore',
+    name: 'Explore',
+    component: './Explore',
+  },
+  {
+    path: '/preview',
+    name: 'preview',
+    component: './Preview',
+  },
+
+  {
     path: '/',
     redirect: '/submit',
   },

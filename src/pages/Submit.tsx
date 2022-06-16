@@ -1,5 +1,5 @@
-import React, { useRef, useState, useEffect } from 'react';
 import type { FormInstance } from 'antd';
+import React, { useRef, useState, useEffect } from 'react';
 import moment from 'moment';
 import { Card, message, Result, Form, Input, Button, Descriptions, Divider, Alert, Statistic, Row, Col } from 'antd';
 import ImageUploader from '@/components/RightContent/ImageUploader'
@@ -7,6 +7,7 @@ import { ProForm, ProFormSelect, ProFormText, StepsForm, ProFormDependency, ProF
 import type { StepDataType } from './data'
 import styles from './submit.less';
 import { TwitterSquareFilled } from '@ant-design/icons';
+import ReactPreview from '@/components/ReactPreview';
 import ImageCommon from "@/assets/common";
 import { request } from 'umi';
 import type { ProjectInfo } from "@/helpers/types";
@@ -15,16 +16,16 @@ import {
 } from '@/utils/ipfs'
 
 export type ProjectInfoFormFields = {
-  name: string
-  description: string
-  infoUri: string
-  logoUri: string
-  twitter: string
-  discord: string
-  payButton: string
-  payDisclosure: string
-  version: number
-}
+  name: string;
+  description: string;
+  infoUri: string;
+  logoUri: string;
+  twitter: string;
+  discord: string;
+  payButton: string;
+  payDisclosure: string;
+  version: number;
+};
 
 const StepDescriptions: React.FC<{
   stepData: StepDataType;
@@ -79,68 +80,75 @@ const StepResult: React.FC<{
 };
 
 const submit: React.FC = () => {
-
-  const storageData = localStorage.getItem('safe-mint-dao')
+  const storageData = localStorage.getItem('safe-mint-dao');
   //const ABIFunctionArray: any[] = []
   const [ABIarry, setABIarry] = useState([]);
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
   const [paramsArray, setparamsArray] = useState([]);
-  const [stepData, setStepData] = useState<ProjectInfo>(storageData ? JSON.parse(storageData) : {
-    logol: '',
-    banner: '',
-    name: '',
-    description: '',
-    chain: '',
-    address: '0xAcc15dC74880C9944775448304B263D191c6077F',
-    website: '',
-    twitter: '',
-    discord: '',
-    telegram: '',
-    supply: '',
-    peraddress: '',
-    time: moment().format('YYYY-MM-DD HH:mm:ss'),
-    refundable: false,
-    functions: [{
-      name: '',
-      free: false,
-      price: '',
-      param: '',
-      description: '',
-      whitelister: false
-    }],
-    current: 0
-  });
+  const [stepData, setStepData] = useState<ProjectInfo>(
+    storageData
+      ? JSON.parse(storageData)
+      : {
+        logol: '',
+        banner: '',
+        name: '',
+        description: '',
+        chain: '',
+        address: '0xAcc15dC74880C9944775448304B263D191c6077F',
+        website: '',
+        twitter: '',
+        discord: '',
+        telegram: '',
+        supply: '',
+        peraddress: '',
+        time: moment().format('YYYY-MM-DD HH:mm:ss'),
+        refundable: false,
+        functions: [
+          {
+            name: '',
+            free: false,
+            price: '',
+            param: '',
+            description: '',
+            whitelister: false,
+          },
+        ],
+        current: 0,
+      },
+  );
 
   const currentChange = async (cur: React.SetStateAction<number>) => {
     if (cur == 1) {
-      setLoading(true)
-      const data = await request(`https://api-moonbeam.moonscan.io/api?module=contract&action=getabi&address=${stepData.address}&apikey=YourApiKeyToken`)
+      setLoading(true);
+      const data = await request(
+        `https://api-moonbeam.moonscan.io/api?module=contract&action=getabi&address=${stepData.address}&apikey=YourApiKeyToken`,
+      );
       if (data.message !== 'OK') {
         message.error('调用合约失败，请检查合约地址');
         return false;
       }
-      message.success('合约获取成功')
+      message.success('合约获取成功');
       const abi = JSON.parse(data?.result);
-      const array = []
+      const array = [];
       for (const i in abi) {
-        if (abi[i].type == "function" && abi[i].stateMutability.includes('payable')) {
+        if (abi[i].type == 'function' && abi[i].stateMutability.includes('payable')) {
           const func = abi[i];
-          const paramsArray = []
-          for (const j in func.inputs) paramsArray.push(func.inputs[j].name)
-          array.push({ label: func.name, value: func.name, params: paramsArray })
+          const paramsArray = [];
+          for (const j in func.inputs) paramsArray.push(func.inputs[j].name);
+          array.push({ label: func.name, value: func.name, params: paramsArray });
         }
       }
       setABIarry(array);
-      setLoading(false)
+      setLoading(false);
     }
     if (cur == 2) {
       await uploadProjectMetadata(stepData)
     }
     setCurrent(cur);
     setStepData((obj) => {
-      return { ...obj, 'current': cur }
-    })
-  }
+      return { ...obj, current: cur };
+    });
+  };
   useEffect(() => {
     if (stepData.current == 1) {
       currentChange(1)
@@ -160,22 +168,22 @@ const submit: React.FC = () => {
   const formRef = useRef<FormInstance>();
   const LAYOUT_TYPE_HORIZONTAL = 'horizontal';
   const formItemLayout = {
-    labelCol: { span: 10 }
+    labelCol: { span: 10 },
   };
   const handleInputBlur = (map: any) => {
     setStepData((obj) => {
-      return { ...obj, ...map, 'current': current }
-    })
-  }
+      return { ...obj, ...map, current: current };
+    });
+  };
 
   const handleFunctionChange = (index: any, key: any, value: any, ary: any) => {
-    setparamsArray(ary)
-    stepData.functions[index][key] = value
-  }
+    setparamsArray(ary);
+    stepData.functions[index][key] = value;
+  };
 
   const handleFunctionBlue = (index: any, key: any, value: any) => {
-    stepData.functions[index][key] = value
-  }
+    stepData.functions[index][key] = value;
+  };
 
   return (
     <Card bordered={false}>
@@ -185,16 +193,17 @@ const submit: React.FC = () => {
         submitter={{
           render: (props, dom) => {
             if (props.step === 0) {
-              return <Button type="primary" loading={loading} onClick={() => props.onSubmit?.()}>
-                NEXT: File Function
-              </Button>
+              return (
+                <Button type="primary" loading={loading} onClick={() => props.onSubmit?.()}>
+                  NEXT: File Function
+                </Button>
+              );
             }
             if (props.step === 2) {
               return null;
             }
             return dom;
           },
-
         }}
       >
         <StepsForm.StepForm<StepDataType>
@@ -206,11 +215,23 @@ const submit: React.FC = () => {
         >
           <div className={styles.submit1}>
             <Form.Item label="Logo">
-              <ImageUploader title='Upload' initialUrl={stepData.logol} onSuccess={(url) => { handleInputBlur({ 'logol': url }) }} />
+              <ImageUploader
+                title="Upload"
+                initialUrl={stepData.logol}
+                onSuccess={(url) => {
+                  handleInputBlur({ logol: url });
+                }}
+              />
             </Form.Item>
 
             <Form.Item label="Project Banner">
-              <ImageUploader title="Upload Banner" initialUrl={stepData.banner} onSuccess={(url) => { handleInputBlur({ 'banner': url }) }} />
+              <ImageUploader
+                title="Upload Banner"
+                initialUrl={stepData.banner}
+                onSuccess={(url) => {
+                  handleInputBlur({ banner: url });
+                }}
+              />
             </Form.Item>
 
             {/* <Upload /> */}
@@ -221,7 +242,7 @@ const submit: React.FC = () => {
               name="name"
               fieldProps={{
                 onBlur: (e) => {
-                  handleInputBlur({ 'name': e.target.value })
+                  handleInputBlur({ name: e.target.value });
                 },
               }}
               rules={[{ required: true, message: '' }]}
@@ -233,7 +254,7 @@ const submit: React.FC = () => {
               name="description"
               fieldProps={{
                 onBlur: (e) => {
-                  handleInputBlur({ 'description': e.target.value })
+                  handleInputBlur({ description: e.target.value });
                 },
               }}
             />
@@ -242,12 +263,12 @@ const submit: React.FC = () => {
                 {
                   value: 'Moonbeam',
                   label: 'Moonbeam',
-                }
+                },
               ]}
               rules={[{ required: true, message: '' }]}
               fieldProps={{
                 onChange: (e) => {
-                  handleInputBlur({ 'chain': e })
+                  handleInputBlur({ chain: e });
                 },
               }}
               width="md"
@@ -261,7 +282,7 @@ const submit: React.FC = () => {
               name="address"
               fieldProps={{
                 onBlur: (e) => {
-                  handleInputBlur({ 'address': e.target.value })
+                  handleInputBlur({ address: e.target.value });
                 },
               }}
               width="md"
@@ -291,7 +312,7 @@ const submit: React.FC = () => {
               name="supply"
               fieldProps={{
                 onBlur: (e) => {
-                  handleInputBlur({ 'supply': e.target.value })
+                  handleInputBlur({ supply: e.target.value });
                 },
               }}
             />
@@ -302,25 +323,28 @@ const submit: React.FC = () => {
               name="peraddress"
               fieldProps={{
                 onBlur: (e) => {
-                  handleInputBlur({ 'peraddress': e.target.value })
+                  handleInputBlur({ peraddress: e.target.value });
                 },
               }}
             />
-            <ProFormSwitch name="refundable" fieldProps={{
-              onChange: (e) => {
-                handleInputBlur({ 'refundable': e })
-              },
-            }} label="Refundable" />
+            <ProFormSwitch
+              name="refundable"
+              fieldProps={{
+                onChange: (e) => {
+                  handleInputBlur({ refundable: e });
+                },
+              }}
+              label="Refundable"
+            />
             <ProFormDateTimePicker
               name="time"
               label="Start Time"
               fieldProps={{
                 format: (value) => value.format('YYYY-MM-DD HH:mm:ss'),
-                onChange: (value) => handleInputBlur({ 'time': value })
+                onChange: (value) => handleInputBlur({ time: value }),
               }}
             />
           </div>
-
         </StepsForm.StepForm>
 
         <StepsForm.StepForm title="Mint Function" layout={LAYOUT_TYPE_HORIZONTAL}>
@@ -409,6 +433,10 @@ const submit: React.FC = () => {
           </StepResult>
         </StepsForm.StepForm>
       </StepsForm>
+      <div className={styles.submitReactPreview}>
+        <div>Preview</div>
+        <ReactPreview isComponent={true} data={stepData} />
+      </div>
       {/* <Divider style={{ margin: '40px 0 24px' }} /> */}
     </Card >
   );
