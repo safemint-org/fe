@@ -7,12 +7,12 @@ import { ProForm, ProFormSelect, ProFormText, StepsForm, ProFormDependency, ProF
 import type { StepDataType } from './data'
 import styles from './submit.less';
 import { TwitterSquareFilled } from '@ant-design/icons';
+import ImageCommon from "@/assets/common";
 import { request } from 'umi';
 import type { ProjectInfo } from "@/helpers/types";
-import { ProjectFunction } from "@/helpers/types";
-import IconFont from '@/constants/icon/index';
-import { values } from 'lodash';
-import { DefaultOptionType } from 'antd/lib/select';
+import {
+  uploadProjectMetadata,
+} from '@/utils/ipfs'
 
 export type ProjectInfoFormFields = {
   name: string
@@ -133,11 +133,19 @@ const submit: React.FC = () => {
       setABIarry(array);
       setLoading(false)
     }
+    if (cur == 2) {
+      await uploadProjectMetadata(stepData)
+    }
     setCurrent(cur);
     setStepData((obj) => {
       return { ...obj, 'current': cur }
     })
   }
+  useEffect(() => {
+    if (stepData.current == 1) {
+      currentChange(1)
+    }
+  }, [stepData.current])
   useEffect(() => {
     const listener = (ev: { preventDefault: () => void; }) => {
       ev.preventDefault();
@@ -147,7 +155,7 @@ const submit: React.FC = () => {
     return () => {
       window.removeEventListener('beforeunload', listener)
     }
-  }, [stepData, stepData.current]);
+  }, [stepData]);
   const [current, setCurrent] = useState(stepData.current);
   const formRef = useRef<FormInstance>();
   const LAYOUT_TYPE_HORIZONTAL = 'horizontal';
@@ -260,19 +268,19 @@ const submit: React.FC = () => {
             />
             <Form.Item label="Account Info">
               <Row align="middle" style={{ margin: '8px 0' }}>
-                <Col span={2}><TwitterSquareFilled style={{ fontSize: '23px' }} /></Col>
+                <Col span={2}><img src={ImageCommon.website} style={{ width: "23px" }} /></Col>
                 <Col span={8}><Input onBlur={(e) => handleInputBlur({ 'website': e.target.value })} placeholder="website" name="website" size="small" /></Col>
               </Row>
               <Row align="middle" style={{ margin: '17px 0' }}>
-                <Col span={2}><TwitterSquareFilled style={{ fontSize: '23px' }} /></Col>
+                <Col span={2}><img src={ImageCommon.twitter} style={{ width: "23px" }} /></Col>
                 <Col span={8}><Input placeholder="Twitter handler" onBlur={(e) => handleInputBlur({ 'twitter': e.target.value })} name="twitter" size="small" /></Col>
               </Row>
               <Row align="middle" style={{ margin: '17px 0' }}>
-                <Col span={2}><TwitterSquareFilled style={{ fontSize: '23px' }} /></Col>
+                <Col span={2}><img src={ImageCommon.discord} style={{ width: "23px" }} /></Col>
                 <Col span={8}><Input placeholder="Discord username" onBlur={(e) => handleInputBlur({ 'discord': e.target.value })} name="discord" size="small" /></Col>
               </Row>
               <Row align="middle" style={{ margin: '17px 0' }}>
-                <Col span={2}><TwitterSquareFilled style={{ fontSize: '23px' }} /></Col>
+                <Col span={2}><img src={ImageCommon.telegram} style={{ width: "23px" }} /></Col>
                 <Col span={8}><Input placeholder="Telegram handler" onBlur={(e) => handleInputBlur({ 'telegram': e.target.value })} name="telegram" size="small" /></Col>
               </Row>
             </Form.Item>
@@ -342,7 +350,11 @@ const submit: React.FC = () => {
                     {/* <input name="name" /> */}
                     <ProFormDependency name={['free']}>
                       {({ free }) => {
-                        return <ProFormText disabled={!free} width={100} name="price" placeholder="Input Price" />
+                        return <ProFormText disabled={!free} width={100} fieldProps={{
+                          onBlur: (e) => {
+                            handleFunctionBlue(index, 'price', e.target.value)
+                          },
+                        }} name="price" placeholder="Input Price" />
                       }}
                     </ProFormDependency>
                     {/* <ProFormText width={100} name="price" placeholder="Input Price" /> */}
@@ -354,7 +366,11 @@ const submit: React.FC = () => {
                   </div>
                 </ProFormGroup>
                 <div className={styles.submitDescription} >
-                  <ProFormTextArea name="description" label="Function Description" />
+                  <ProFormTextArea name="description" fieldProps={{
+                    onBlur: (e) => {
+                      handleFunctionBlue(index, 'description', e.target.value)
+                    },
+                  }} label="Function Description" />
                 </div>
                 <div>
                   <div className={styles.submitTitle}>Restrict only for whitelister?</div>
@@ -364,6 +380,20 @@ const submit: React.FC = () => {
               </Form.Item>
             )} creatorButtonProps={{
               creatorButtonText: 'Add More Functions',
+            }} actionGuard={{
+              beforeAddRow: async (defaultValue, insertIndex) => {
+                return new Promise((resolve) => {
+                  stepData.functions = [...stepData.functions, {
+                    name: '',
+                    free: false,
+                    price: '',
+                    param: '',
+                    description: '',
+                    whitelister: false
+                  }]
+                  setTimeout(() => resolve(true), 1000);
+                });
+              }
             }} />
           </div>
         </StepsForm.StepForm>
