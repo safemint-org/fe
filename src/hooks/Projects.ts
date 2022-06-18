@@ -1,15 +1,14 @@
-import axios from "axios";
-import {useEffect} from "react";
-import {getPinnedListByTag, IPFS_TAGS} from "@/utils/ipfs";
-import {IpfsCacheName} from "@/models/ipfs-cache/cache-name";
+import { IpfsCacheName } from '@/models/ipfs-cache/cache-name';
+import { getPinnedListByTag } from '@/utils/ipfs';
+import { useEffect } from 'react';
 
-export function useTrendingProjects(){
-  useEffect(()=>{
-    async function start(){
-      const jsonRes = await getPinnedListByTag(IpfsCacheName.trendingV2)
-      console.log(jsonRes)
+export function useTrendingProjects() {
+  useEffect(() => {
+    async function start() {
+      const jsonRes = await getPinnedListByTag(IpfsCacheName.trendingV2);
+      console.log('getPinnedListByTag');
+      console.log(jsonRes);
     }
-    start()
-  },[])
-
+    start();
+  }, []);
 }

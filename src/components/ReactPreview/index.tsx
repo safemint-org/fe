@@ -13,6 +13,7 @@ export interface IPreview {
 
 const ReactPreview: React.FC<IPreview> = (props) => {
   const { isComponent, data } = props;
+  console.log(data);
   return (
     <Row style={{ background: '#FFFFFF' }}>
       <Col span={24}>
@@ -20,6 +21,7 @@ const ReactPreview: React.FC<IPreview> = (props) => {
           className={styles.image_header}
           preview={false}
           width={'100%'}
+          height={100}
           src={data?.banner ? data?.banner : ImageCommon.banner_preview}
         />
       </Col>
@@ -76,15 +78,15 @@ const ReactPreview: React.FC<IPreview> = (props) => {
               </div>
               <div>
                 <InfoTitle>Refundable?</InfoTitle>
-                <InfoDesc>Yes</InfoDesc>
+                <InfoDesc>{data?.refundable ? 'YES' : 'NO'}</InfoDesc>
               </div>
               <div>
                 <InfoTitle>MAX PER ADDRESS</InfoTitle>
-                <InfoDesc>unlimited</InfoDesc>
+                <InfoDesc>{data?.peraddress}</InfoDesc>
               </div>
               <div>
                 <InfoTitle>START TIME</InfoTitle>
-                <InfoDesc>2022.5.22</InfoDesc>
+                <InfoDesc>2022-02-01</InfoDesc>
               </div>
             </InfoContainer>
             <PropertyContainer justify={'center'}>
@@ -130,6 +132,7 @@ const ReactPreview: React.FC<IPreview> = (props) => {
     </Row>
   );
 };
+
 const Content = styled.div`
   background: #ffffff;
   box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.25);

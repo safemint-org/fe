@@ -1,11 +1,11 @@
-import pinataClient, { PinataMetadata, PinataPinResponse } from '@pinata/sdk';
-import axios from 'axios';
 import { IpfsCacheJsonData } from '@/models/ipfs-cache/cache-data';
 import { IpfsCacheName } from '@/models/ipfs-cache/cache-name';
 import { consolidateMetadata, ProjectMetadataV4 } from '@/models/project-metadata';
+import pinataClient, { PinataMetadata, PinataPinResponse } from '@pinata/sdk';
+import axios from 'axios';
 
-import { readNetwork } from '@/constants/networks';
 import { IPFS_GATEWAY_HOSTNAME } from '@/constants/ipfs';
+import { readNetwork } from '@/constants/networks';
 
 const pinata_api_key = '9ecb30311e0fafe19531';
 const pinata_secret_api_key = '4877f1294f61a6840f073ff4e46d9b51843629b30edde78397a8a594b259c5c7';
@@ -50,7 +50,8 @@ export const cidFromUrl = (url: string | undefined) => url?.split('/').pop();
 
 export const pinFileToIpfs = (file: File | Blob | string, metadata?: PinataMetadata) => {
   const data = new FormData();
-
+  console.log('upload image');
+  console.log(metadata);
   data.append('file', file);
 
   if (metadata) {
