@@ -1,6 +1,14 @@
 import { NetworkName } from '@/models/network-name';
 
-const infuraId = 'safe-mint';
+//const infuraId = 'safe-mint';
+const infuraId = 'b6a1b04ad0d340289153ebae2baa2a08';
+export enum NetworkId {
+  MAINNET = 1,
+  TESTNET_KOVAN = 42,
+  TESTNET_ROPSTEN = 3,
+  TESTNET_RINKEBY = 4,
+  TESTNET_GOERLI = 5,
+}
 
 export type NetworkInfo = {
   name: NetworkName;
@@ -21,14 +29,14 @@ export const NETWORKS: Record<number, NetworkInfo> = {
     blockExplorer: '',
     rpcUrl: 'http://' + window.location.hostname + ':8545',
   },
-  1: {
+  [NetworkId.MAINNET]: {
     name: NetworkName.mainnet,
     color: '#ff8b9e',
     chainId: 1,
     rpcUrl: `https://mainnet.infura.io/v3/${infuraId}`,
     blockExplorer: 'https://etherscan.io/',
   },
-  42: {
+  [NetworkId.TESTNET_KOVAN]: {
     name: NetworkName.kovan,
     color: '#7003DD',
     chainId: 42,
@@ -36,7 +44,7 @@ export const NETWORKS: Record<number, NetworkInfo> = {
     blockExplorer: 'https://kovan.etherscan.io/',
     faucet: 'https://gitter.im/kovan-testnet/faucet', //https://faucet.kovan.network/
   },
-  4: {
+  [NetworkId.TESTNET_RINKEBY]: {
     name: NetworkName.rinkeby,
     color: '#e0d068',
     chainId: 4,
@@ -44,7 +52,7 @@ export const NETWORKS: Record<number, NetworkInfo> = {
     faucet: 'https://faucet.rinkeby.io/',
     blockExplorer: 'https://rinkeby.etherscan.io/',
   },
-  3: {
+  [NetworkId.TESTNET_ROPSTEN]: {
     name: NetworkName.ropsten,
     color: '#F60D09',
     chainId: 3,
@@ -52,7 +60,7 @@ export const NETWORKS: Record<number, NetworkInfo> = {
     blockExplorer: 'https://ropsten.etherscan.io/',
     rpcUrl: `https://ropsten.infura.io/v3/${infuraId}`,
   },
-  5: {
+  [NetworkId.TESTNET_GOERLI]: {
     name: NetworkName.goerli,
     color: '#0975F6',
     chainId: 5,

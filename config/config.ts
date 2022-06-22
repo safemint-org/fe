@@ -1,6 +1,5 @@
 // https://umijs.org/config/
 import { defineConfig } from 'umi';
-import { join } from 'path';
 
 import defaultSettings from './defaultSettings';
 import routes from './routes';
@@ -72,4 +71,8 @@ export default defineConfig({
   mfsu: {},
   webpack5: {},
   exportStatic: {},
+  publicPath: './',
+  history: {
+    type: 'hash',
+  },
 });

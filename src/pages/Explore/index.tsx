@@ -2,14 +2,32 @@ import { Button, Checkbox, Dropdown, Menu, Progress, Row, Space } from 'antd';
 
 import ImageCommon from '@/assets/common';
 import { BaseInput, FlexViewCenter } from '@/components/Common';
+import { NetworkId } from '@/constants/networks';
+import { Providers } from '@/helpers/providers/Providers';
 import { useTrendingProjects } from '@/hooks/Projects';
+import { SafeMint__factory } from '@/typechain/factories/SafeMint__factory';
 import { autoWidthVW } from '@/utils/utils';
 import { DownOutlined } from '@ant-design/icons';
+import { useEffect } from 'react';
 import styled from 'styled-components';
 import { Link } from 'umi';
+
 require('./index.less');
+
+export const getPassed = async () => {
+  const provider = Providers.getStaticProvider(NetworkId.TESTNET_RINKEBY);
+  const contract = SafeMint__factory.connect('', provider);
+  const [name, owner] = await contract.getPassed(0, 10);
+  console.log(name, owner);
+};
+
 export default function Explore() {
   useTrendingProjects();
+  useEffect(() => {
+    //start();
+    getPassed();
+  }, []);
+
   return (
     <Container>
       <H1>Explore Projects</H1>
@@ -27,6 +45,9 @@ export default function Explore() {
         <a href="/preview">
           <Item></Item>
         </a>
+        <Link to={{ pathname: '/preview', info: { name: '测试内容', address: '0x123adas4' } }}>
+          <Item></Item>
+        </Link>
         <Link to={{ pathname: '/preview', info: { name: '测试内容', address: '0x123adas4' } }}>
           <Item></Item>
         </Link>
