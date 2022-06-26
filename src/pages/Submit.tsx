@@ -1,15 +1,20 @@
 import type { FormInstance } from 'antd';
 import React, { useRef, useState, useEffect } from 'react';
 import moment from 'moment';
+import { Providers } from '@/helpers/providers/Providers';
+import { NetworkId } from '@/constants/networks';
+import { SafeMint__factory } from '@/typechain/factories/SafeMint__factory';
+import { TokenERC20__factory } from '@/typechain/factories/TokenERC20__factory';
 import { Card, message, Result, Form, Input, Button, Descriptions, Divider, Alert, Statistic, Row, Col } from 'antd';
 import ImageUploader from '@/components/RightContent/ImageUploader'
 import { ProForm, ProFormSelect, ProFormText, StepsForm, ProFormDependency, ProFormTextArea, ProFormSwitch, ProFormGroup, ProFormList, ProFormDateTimePicker } from '@ant-design/pro-form';
 import type { StepDataType } from './data'
 import styles from './submit.less';
+import { ethers } from 'ethers'
 import { TwitterSquareFilled } from '@ant-design/icons';
 import ReactPreview from '@/components/ReactPreview';
 import ImageCommon from "@/assets/common";
-import { request } from 'umi';
+import { useModel, request } from 'umi';
 import type { ProjectInfo } from "@/helpers/types";
 import {
   uploadProjectMetadata,
@@ -56,33 +61,16 @@ const StepDescriptions: React.FC<{
   );
 };
 
-const StepResult: React.FC<{
-  onFinish: () => Promise<void>;
-}> = (props) => {
-  return (
-    <Result
-      status="success"
-      title="操作成功"
-      subTitle="预计两小时内到账"
-      extra={
-        <>
-          <Button type="primary" onClick={props.onFinish}>
-            再转一笔
-          </Button>
-          <Button>查看账单</Button>
-        </>
-      }
-      className={styles.result}
-    >
-      {props.children}
-    </Result>
-  );
-};
-
 const submit: React.FC = () => {
   const storageData = localStorage.getItem('safe-mint-dao');
+  const { connection } = useModel('useWeb3Model', model => (
+    {
+      connection: model.connection
+    }
+  ))
   //const ABIFunctionArray: any[] = []
   const [ABIarry, setABIarry] = useState([]);
+  const [getIpfsHash, setIpfsHash] = useState('');
   const [loading, setLoading] = useState(false);
   const [paramsArray, setparamsArray] = useState([]);
   const [stepData, setStepData] = useState<ProjectInfo>(
@@ -142,12 +130,30 @@ const submit: React.FC = () => {
       setLoading(false);
     }
     if (cur == 2) {
-      await uploadProjectMetadata(stepData)
+      const { IpfsHash } = await uploadProjectMetadata(stepData)
+      if (!IpfsHash) {
+        message.error('上传失败');
+        return false;
+      }
+      setIpfsHash(IpfsHash)
     }
     setCurrent(cur);
     setStepData((obj) => {
       return { ...obj, current: cur };
     });
+  };
+  const upIpfs = async () => {
+    if (getIpfsHash) {
+      const contract = new ethers.Contract('0x3b68C1Cd8DD6C40aFFf144EA7094a7097FbBEdca', SafeMint__factory.abi, connection.signer)
+      try {
+        const data = await contract.saveProject(stepData.name, stepData.address, 0, 20, getIpfsHash)
+        // 清空
+        localStorage.setItem('safe-mint-dao', '')
+
+      } catch (err) {
+        console.log("Error: ", err)
+      }
+    }
   };
   useEffect(() => {
     if (stepData.current == 1) {
@@ -184,7 +190,6 @@ const submit: React.FC = () => {
   const handleFunctionBlue = (index: any, key: any, value: any) => {
     stepData.functions[index][key] = value;
   };
-
   return (
     <Card bordered={false}>
       <StepsForm
@@ -200,7 +205,9 @@ const submit: React.FC = () => {
               );
             }
             if (props.step === 2) {
-              return null;
+              return (
+                <Button></Button>
+              );
             }
             return dom;
           },
@@ -422,20 +429,14 @@ const submit: React.FC = () => {
           </div>
         </StepsForm.StepForm>
 
-        <StepsForm.StepForm title="Check & Submit">
-          <StepResult
-            onFinish={async () => {
-              //setCurrent(0);
-              formRef.current?.resetFields();
-            }}
-          >
-            <StepDescriptions stepData={stepData} />
-          </StepResult>
-        </StepsForm.StepForm>
+        <StepsForm.StepForm title="Check & Submit"></StepsForm.StepForm>
       </StepsForm>
-      <div className={styles.submitReactPreview}>
-        <div>Preview</div>
+      <div className={current === 2 ? styles.submitReactPreviewLast : styles.submitReactPreview}>
+        <div className={styles.Previewtext}>Preview</div>
         <ReactPreview isComponent={true} data={stepData} />
+        {current === 2 && (<Button type="primary" loading={loading} onClick={() => upIpfs}>
+          NEXT: File Function
+        </Button>)}
       </div>
       {/* <Divider style={{ margin: '40px 0 24px' }} /> */}
     </Card >

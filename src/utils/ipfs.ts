@@ -92,7 +92,7 @@ export const uploadProjectMetadata = (
       keyvalues: {
         tag: IPFS_TAGS.METADATA,
       } as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-      name: handle ? metadataNameForHandle(handle) : 'juicebox-project-metadata.json',
+      name: handle ? metadataNameForHandle(handle) : 'safe-mint-metadata.json',
     },
   });
 

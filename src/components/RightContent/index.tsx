@@ -18,6 +18,7 @@ import HeaderDropdown from '../HeaderDropdown';
 import SelectIcon from './SelectIcon';
 import { SearchOutlined } from '@ant-design/icons';
 import defaultSettings from '../../../config/defaultSettings';
+import { SafeMint__factory } from '@/typechain/factories/SafeMint__factory';
 
 
 
@@ -26,43 +27,16 @@ import defaultSettings from '../../../config/defaultSettings';
 
 export type SiderTheme = 'light' | 'dark';
 
-
-interface IAppState {
-  fetching: boolean;
-  address: string;
-  web3: any;
-  provider: any;
-  connected: boolean;
-  chainId: number;
-  networkId: number;
-  assets: IAssetData[];
-  showModal: boolean;
-  pendingRequest: boolean;
-  result: any | null;
-}
-
-
-const INITIAL_STATE: IAppState = {
-  fetching: false,
-  address: "",
-  web3: null,
-  provider: null,
-  connected: false,
-  chainId: 1,
-  networkId: 1,
-  assets: [],
-  showModal: false,
-  pendingRequest: false,
-  result: null
-};
-
 const { Search } = Input;
 
 const GlobalHeaderRight: React.FC = () => {
   const { initialState, setInitialState } = useModel('@@initialState');
-  const [state, setState] = useState({
-    ...INITIAL_STATE
-  });
+  const { connection, setconnection } = useModel('useWeb3Model', model => (
+    {
+      connection: model.connection,
+      setconnection: model.setconnection
+    }
+  ))
 
   // Example for Polygon/Matic:
   const customNetworkOptions = {
@@ -100,10 +74,11 @@ const GlobalHeaderRight: React.FC = () => {
       },
     };
   }
+
   const getNetwork = (id) => NETWORKS[id].name
-  console.log('id', getNetwork(state.chainId))
+  console.log('id', getNetwork(connection.chainId))
   const web3Modal = new Web3Modal({
-    network: getNetwork(state.chainId),
+    network: getNetwork(connection.chainId),
     cacheProvider: true,
     providerOptions: getProviderOptions()
   });
@@ -125,15 +100,18 @@ const GlobalHeaderRight: React.FC = () => {
 
     const instance = web3Modal.connect()
     const provider = new ethers.providers.Web3Provider(await instance);
+    // MetaMask 需要请求权限才能连接用户帐户
+    await provider.send("eth_requestAccounts", []);
     const signer = provider.getSigner();
     const accounts = await provider.listAccounts();
-    const { chainId } = await provider.getNetwork()
+    const { chainId } = await provider.getNetwork();
     const address = accounts[0];
-    await setState({
+    await setconnection({
       instance,
       connected: true,
       address,
-      chainId
+      chainId,
+      signer
     });
   }
 
@@ -145,7 +123,7 @@ const GlobalHeaderRight: React.FC = () => {
 
   const clear = () => {
     web3Modal.clearCachedProvider()
-    setState({ ...INITIAL_STATE });
+    setconnection({ ...INITIAL_STATE });
   }
 
   const menuItems: any[] = [
@@ -187,15 +165,15 @@ const GlobalHeaderRight: React.FC = () => {
         onChange={onChangeDark}
         defaultChecked
       />
-      {state.address && (
+      {connection.address && (
         (<HeaderDropdown overlay={menuHeaderDropdown}>
           <span className={`${styles.action} ${styles.account}`}>
             <Avatar size="small" className={styles.avatar} src="https://gw.alipayobjects.com/zos/rmsportal/BiazfanxmamNRoxxVxka.png" alt="avatar" />
-            <div className={`${styles.name} anticon`}>{ellipseAddress(state.address)}</div>
+            <div className={`${styles.name} anticon`}>{ellipseAddress(connection.address)}</div>
           </span>
         </HeaderDropdown>))}
 
-      {!state.address && (<Button onClick={onLoade}> Connect </Button>)}
+      {!connection.address && (<Button onClick={onLoade}> Connect </Button>)}
       <SelectLang onItemClick={itemClick} icon={<SelectIcon iconName='zh-CN' />} />
     </Space>
   );
