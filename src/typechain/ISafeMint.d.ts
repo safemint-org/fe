@@ -11,6 +11,8 @@ import {
   PopulatedTransaction,
   BaseContract,
   ContractTransaction,
+  Overrides,
+  CallOverrides,
 } from "ethers";
 import { BytesLike } from "@ethersproject/bytes";
 import { Listener, Provider } from "@ethersproject/providers";
@@ -18,48 +20,59 @@ import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 
 interface ISafeMintInterface extends ethers.utils.Interface {
-  functions: {};
-
-  events: {
-    "ArbitrateProject(string,address,uint8)": EventFragment;
-    "AuditProject(string,address,uint256,string,uint8)": EventFragment;
-    "ChallengeProject(string,address,uint256,string)": EventFragment;
-    "EditProject(string,uint256,uint256,string)": EventFragment;
-    "SaveProject(string,address,address,uint256,uint256,uint256,string,uint256)": EventFragment;
+  functions: {
+    "auditorClaimFee(string)": FunctionFragment;
+    "getProject(string)": FunctionFragment;
+    "getProjectById(uint256)": FunctionFragment;
+    "projectId(string)": FunctionFragment;
+    "projectStatus(string,uint8)": FunctionFragment;
   };
 
-  getEvent(nameOrSignatureOrTopic: "ArbitrateProject"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "AuditProject"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "ChallengeProject"): EventFragment;
+  encodeFunctionData(
+    functionFragment: "auditorClaimFee",
+    values: [string]
+  ): string;
+  encodeFunctionData(functionFragment: "getProject", values: [string]): string;
+  encodeFunctionData(
+    functionFragment: "getProjectById",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(functionFragment: "projectId", values: [string]): string;
+  encodeFunctionData(
+    functionFragment: "projectStatus",
+    values: [string, BigNumberish]
+  ): string;
+
+  decodeFunctionResult(
+    functionFragment: "auditorClaimFee",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "getProject", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "getProjectById",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "projectId", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "projectStatus",
+    data: BytesLike
+  ): Result;
+
+  events: {
+    "AuditorClaimFee(string,uint256)": EventFragment;
+    "EditProject(string,uint256,uint256,string)": EventFragment;
+    "ProjectStatus(string,uint8)": EventFragment;
+    "SaveProject(string,address,address,uint256,uint256,string,uint256,uint256)": EventFragment;
+  };
+
+  getEvent(nameOrSignatureOrTopic: "AuditorClaimFee"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "EditProject"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ProjectStatus"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SaveProject"): EventFragment;
 }
 
-export type ArbitrateProjectEvent = TypedEvent<
-  [string, string, number] & {
-    name: string;
-    arbitrator: string;
-    status: number;
-  }
->;
-
-export type AuditProjectEvent = TypedEvent<
-  [string, string, BigNumber, string, number] & {
-    name: string;
-    auditor: string;
-    auditPrice: BigNumber;
-    comments: string;
-    status: number;
-  }
->;
-
-export type ChallengeProjectEvent = TypedEvent<
-  [string, string, BigNumber, string] & {
-    name: string;
-    challenger: string;
-    challengePrice: BigNumber;
-    comments: string;
-  }
+export type AuditorClaimFeeEvent = TypedEvent<
+  [string, BigNumber] & { name: string; projectFee: BigNumber }
 >;
 
 export type EditProjectEvent = TypedEvent<
@@ -71,6 +84,10 @@ export type EditProjectEvent = TypedEvent<
   }
 >;
 
+export type ProjectStatusEvent = TypedEvent<
+  [string, number] & { name: string; status: number }
+>;
+
 export type SaveProjectEvent = TypedEvent<
   [
     string,
@@ -78,8 +95,8 @@ export type SaveProjectEvent = TypedEvent<
     string,
     BigNumber,
     BigNumber,
-    BigNumber,
     string,
+    BigNumber,
     BigNumber
   ] & {
     name: string;
@@ -87,8 +104,8 @@ export type SaveProjectEvent = TypedEvent<
     projectContract: string;
     startTime: BigNumber;
     endTime: BigNumber;
-    projectPrice: BigNumber;
     ipfsAddress: string;
+    projectPrice: BigNumber;
     projectId: BigNumber;
   }
 >;
@@ -136,91 +153,234 @@ export class ISafeMint extends BaseContract {
 
   interface: ISafeMintInterface;
 
-  functions: {};
+  functions: {
+    auditorClaimFee(
+      name: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
 
-  callStatic: {};
+    getProject(
+      name: string,
+      overrides?: CallOverrides
+    ): Promise<
+      [
+        BigNumber,
+        [
+          string,
+          string,
+          BigNumber,
+          string,
+          BigNumber,
+          BigNumber,
+          string,
+          BigNumber,
+          number
+        ] & {
+          name: string;
+          owner: string;
+          createTime: BigNumber;
+          projectContract: string;
+          startTime: BigNumber;
+          endTime: BigNumber;
+          ipfsAddress: string;
+          projectFee: BigNumber;
+          status: number;
+        }
+      ]
+    >;
+
+    getProjectById(
+      _projectId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<
+      [
+        [
+          string,
+          string,
+          BigNumber,
+          string,
+          BigNumber,
+          BigNumber,
+          string,
+          BigNumber,
+          number
+        ] & {
+          name: string;
+          owner: string;
+          createTime: BigNumber;
+          projectContract: string;
+          startTime: BigNumber;
+          endTime: BigNumber;
+          ipfsAddress: string;
+          projectFee: BigNumber;
+          status: number;
+        }
+      ]
+    >;
+
+    projectId(name: string, overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    projectStatus(
+      name: string,
+      status: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+  };
+
+  auditorClaimFee(
+    name: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  getProject(
+    name: string,
+    overrides?: CallOverrides
+  ): Promise<
+    [
+      BigNumber,
+      [
+        string,
+        string,
+        BigNumber,
+        string,
+        BigNumber,
+        BigNumber,
+        string,
+        BigNumber,
+        number
+      ] & {
+        name: string;
+        owner: string;
+        createTime: BigNumber;
+        projectContract: string;
+        startTime: BigNumber;
+        endTime: BigNumber;
+        ipfsAddress: string;
+        projectFee: BigNumber;
+        status: number;
+      }
+    ]
+  >;
+
+  getProjectById(
+    _projectId: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<
+    [
+      string,
+      string,
+      BigNumber,
+      string,
+      BigNumber,
+      BigNumber,
+      string,
+      BigNumber,
+      number
+    ] & {
+      name: string;
+      owner: string;
+      createTime: BigNumber;
+      projectContract: string;
+      startTime: BigNumber;
+      endTime: BigNumber;
+      ipfsAddress: string;
+      projectFee: BigNumber;
+      status: number;
+    }
+  >;
+
+  projectId(name: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+  projectStatus(
+    name: string,
+    status: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  callStatic: {
+    auditorClaimFee(name: string, overrides?: CallOverrides): Promise<void>;
+
+    getProject(
+      name: string,
+      overrides?: CallOverrides
+    ): Promise<
+      [
+        BigNumber,
+        [
+          string,
+          string,
+          BigNumber,
+          string,
+          BigNumber,
+          BigNumber,
+          string,
+          BigNumber,
+          number
+        ] & {
+          name: string;
+          owner: string;
+          createTime: BigNumber;
+          projectContract: string;
+          startTime: BigNumber;
+          endTime: BigNumber;
+          ipfsAddress: string;
+          projectFee: BigNumber;
+          status: number;
+        }
+      ]
+    >;
+
+    getProjectById(
+      _projectId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<
+      [
+        string,
+        string,
+        BigNumber,
+        string,
+        BigNumber,
+        BigNumber,
+        string,
+        BigNumber,
+        number
+      ] & {
+        name: string;
+        owner: string;
+        createTime: BigNumber;
+        projectContract: string;
+        startTime: BigNumber;
+        endTime: BigNumber;
+        ipfsAddress: string;
+        projectFee: BigNumber;
+        status: number;
+      }
+    >;
+
+    projectId(name: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+    projectStatus(
+      name: string,
+      status: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+  };
 
   filters: {
-    "ArbitrateProject(string,address,uint8)"(
+    "AuditorClaimFee(string,uint256)"(
       name?: string | null,
-      arbitrator?: string | null,
-      status?: null
+      projectFee?: null
     ): TypedEventFilter<
-      [string, string, number],
-      { name: string; arbitrator: string; status: number }
+      [string, BigNumber],
+      { name: string; projectFee: BigNumber }
     >;
 
-    ArbitrateProject(
+    AuditorClaimFee(
       name?: string | null,
-      arbitrator?: string | null,
-      status?: null
+      projectFee?: null
     ): TypedEventFilter<
-      [string, string, number],
-      { name: string; arbitrator: string; status: number }
-    >;
-
-    "AuditProject(string,address,uint256,string,uint8)"(
-      name?: string | null,
-      auditor?: string | null,
-      auditPrice?: null,
-      comments?: null,
-      status?: null
-    ): TypedEventFilter<
-      [string, string, BigNumber, string, number],
-      {
-        name: string;
-        auditor: string;
-        auditPrice: BigNumber;
-        comments: string;
-        status: number;
-      }
-    >;
-
-    AuditProject(
-      name?: string | null,
-      auditor?: string | null,
-      auditPrice?: null,
-      comments?: null,
-      status?: null
-    ): TypedEventFilter<
-      [string, string, BigNumber, string, number],
-      {
-        name: string;
-        auditor: string;
-        auditPrice: BigNumber;
-        comments: string;
-        status: number;
-      }
-    >;
-
-    "ChallengeProject(string,address,uint256,string)"(
-      name?: string | null,
-      challenger?: string | null,
-      challengePrice?: null,
-      comments?: null
-    ): TypedEventFilter<
-      [string, string, BigNumber, string],
-      {
-        name: string;
-        challenger: string;
-        challengePrice: BigNumber;
-        comments: string;
-      }
-    >;
-
-    ChallengeProject(
-      name?: string | null,
-      challenger?: string | null,
-      challengePrice?: null,
-      comments?: null
-    ): TypedEventFilter<
-      [string, string, BigNumber, string],
-      {
-        name: string;
-        challenger: string;
-        challengePrice: BigNumber;
-        comments: string;
-      }
+      [string, BigNumber],
+      { name: string; projectFee: BigNumber }
     >;
 
     "EditProject(string,uint256,uint256,string)"(
@@ -253,14 +413,24 @@ export class ISafeMint extends BaseContract {
       }
     >;
 
-    "SaveProject(string,address,address,uint256,uint256,uint256,string,uint256)"(
+    "ProjectStatus(string,uint8)"(
+      name?: string | null,
+      status?: null
+    ): TypedEventFilter<[string, number], { name: string; status: number }>;
+
+    ProjectStatus(
+      name?: string | null,
+      status?: null
+    ): TypedEventFilter<[string, number], { name: string; status: number }>;
+
+    "SaveProject(string,address,address,uint256,uint256,string,uint256,uint256)"(
       name?: string | null,
       owner?: string | null,
       projectContract?: string | null,
       startTime?: null,
       endTime?: null,
-      projectPrice?: null,
       ipfsAddress?: null,
+      projectPrice?: null,
       projectId?: null
     ): TypedEventFilter<
       [
@@ -269,8 +439,8 @@ export class ISafeMint extends BaseContract {
         string,
         BigNumber,
         BigNumber,
-        BigNumber,
         string,
+        BigNumber,
         BigNumber
       ],
       {
@@ -279,8 +449,8 @@ export class ISafeMint extends BaseContract {
         projectContract: string;
         startTime: BigNumber;
         endTime: BigNumber;
-        projectPrice: BigNumber;
         ipfsAddress: string;
+        projectPrice: BigNumber;
         projectId: BigNumber;
       }
     >;
@@ -291,8 +461,8 @@ export class ISafeMint extends BaseContract {
       projectContract?: string | null,
       startTime?: null,
       endTime?: null,
-      projectPrice?: null,
       ipfsAddress?: null,
+      projectPrice?: null,
       projectId?: null
     ): TypedEventFilter<
       [
@@ -301,8 +471,8 @@ export class ISafeMint extends BaseContract {
         string,
         BigNumber,
         BigNumber,
-        BigNumber,
         string,
+        BigNumber,
         BigNumber
       ],
       {
@@ -311,14 +481,60 @@ export class ISafeMint extends BaseContract {
         projectContract: string;
         startTime: BigNumber;
         endTime: BigNumber;
-        projectPrice: BigNumber;
         ipfsAddress: string;
+        projectPrice: BigNumber;
         projectId: BigNumber;
       }
     >;
   };
 
-  estimateGas: {};
+  estimateGas: {
+    auditorClaimFee(
+      name: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
 
-  populateTransaction: {};
+    getProject(name: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+    getProjectById(
+      _projectId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    projectId(name: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+    projectStatus(
+      name: string,
+      status: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+  };
+
+  populateTransaction: {
+    auditorClaimFee(
+      name: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    getProject(
+      name: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getProjectById(
+      _projectId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    projectId(
+      name: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    projectStatus(
+      name: string,
+      status: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+  };
 }

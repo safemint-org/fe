@@ -12,7 +12,6 @@ import {
   BaseContract,
   ContractTransaction,
   Overrides,
-  PayableOverrides,
   CallOverrides,
 } from "ethers";
 import { BytesLike } from "@ethersproject/bytes";
@@ -22,32 +21,20 @@ import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 
 interface SafeMintInterface extends ethers.utils.Interface {
   functions: {
-    "ARBITRATOR_ROLE()": FunctionFragment;
     "AUDITOR_ROLE()": FunctionFragment;
-    "Arbitrate(string,uint8)": FunctionFragment;
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
-    "adminSetAuditPrice(uint256)": FunctionFragment;
-    "adminSetChellengePrice(uint256)": FunctionFragment;
-    "adminSetDuration(uint256)": FunctionFragment;
     "adminSetProjectPrice(uint256)": FunctionFragment;
     "adminWithdraw(address)": FunctionFragment;
-    "audit(string,string,uint8)": FunctionFragment;
-    "auditPrice()": FunctionFragment;
-    "auditRecord(uint256,uint256)": FunctionFragment;
-    "challenge(string,string)": FunctionFragment;
+    "auditorClaimFee(string)": FunctionFragment;
     "challengeArr(uint256)": FunctionFragment;
-    "challengePrice()": FunctionFragment;
-    "challengeRecord(uint256,uint256)": FunctionFragment;
-    "claimAuditReward(uint256)": FunctionFragment;
-    "claimChellengeReward(uint256)": FunctionFragment;
     "contractAddress(address)": FunctionFragment;
-    "duration()": FunctionFragment;
     "editProject(string,uint256,uint256,string)": FunctionFragment;
-    "feeRecord(uint256)": FunctionFragment;
     "getChallenge(uint256,uint256)": FunctionFragment;
     "getLocked(uint256,uint256)": FunctionFragment;
     "getPassed(uint256,uint256)": FunctionFragment;
     "getPending(uint256,uint256)": FunctionFragment;
+    "getProject(string)": FunctionFragment;
+    "getProjectById(uint256)": FunctionFragment;
     "getReject(uint256,uint256)": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
     "getRoleMember(bytes32,uint256)": FunctionFragment;
@@ -56,46 +43,29 @@ interface SafeMintInterface extends ethers.utils.Interface {
     "grantRole(bytes32,address)": FunctionFragment;
     "hasRole(bytes32,address)": FunctionFragment;
     "lockedArr(uint256)": FunctionFragment;
+    "namehashToId(bytes32)": FunctionFragment;
     "passedArr(uint256)": FunctionFragment;
     "pendingArr(uint256)": FunctionFragment;
     "projectArr(uint256)": FunctionFragment;
-    "projectId(bytes32)": FunctionFragment;
+    "projectId(string)": FunctionFragment;
     "projectName(string)": FunctionFragment;
     "projectPrice()": FunctionFragment;
+    "projectStatus(string,uint8)": FunctionFragment;
     "rejectArr(uint256)": FunctionFragment;
     "renounceRole(bytes32,address)": FunctionFragment;
     "revokeRole(bytes32,address)": FunctionFragment;
     "saveProject(string,address,uint256,uint256,string)": FunctionFragment;
+    "token()": FunctionFragment;
     "user(address)": FunctionFragment;
   };
 
-  encodeFunctionData(
-    functionFragment: "ARBITRATOR_ROLE",
-    values?: undefined
-  ): string;
   encodeFunctionData(
     functionFragment: "AUDITOR_ROLE",
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "Arbitrate",
-    values: [string, BigNumberish]
-  ): string;
-  encodeFunctionData(
     functionFragment: "DEFAULT_ADMIN_ROLE",
     values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "adminSetAuditPrice",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "adminSetChellengePrice",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "adminSetDuration",
-    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "adminSetProjectPrice",
@@ -106,53 +76,20 @@ interface SafeMintInterface extends ethers.utils.Interface {
     values: [string]
   ): string;
   encodeFunctionData(
-    functionFragment: "audit",
-    values: [string, string, BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "auditPrice",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "auditRecord",
-    values: [BigNumberish, BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "challenge",
-    values: [string, string]
+    functionFragment: "auditorClaimFee",
+    values: [string]
   ): string;
   encodeFunctionData(
     functionFragment: "challengeArr",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "challengePrice",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "challengeRecord",
-    values: [BigNumberish, BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "claimAuditReward",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "claimChellengeReward",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
     functionFragment: "contractAddress",
     values: [string]
   ): string;
-  encodeFunctionData(functionFragment: "duration", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "editProject",
     values: [string, BigNumberish, BigNumberish, string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "feeRecord",
-    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getChallenge",
@@ -169,6 +106,11 @@ interface SafeMintInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "getPending",
     values: [BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(functionFragment: "getProject", values: [string]): string;
+  encodeFunctionData(
+    functionFragment: "getProjectById",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getReject",
@@ -203,6 +145,10 @@ interface SafeMintInterface extends ethers.utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
+    functionFragment: "namehashToId",
+    values: [BytesLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "passedArr",
     values: [BigNumberish]
   ): string;
@@ -214,14 +160,15 @@ interface SafeMintInterface extends ethers.utils.Interface {
     functionFragment: "projectArr",
     values: [BigNumberish]
   ): string;
-  encodeFunctionData(
-    functionFragment: "projectId",
-    values: [BytesLike]
-  ): string;
+  encodeFunctionData(functionFragment: "projectId", values: [string]): string;
   encodeFunctionData(functionFragment: "projectName", values: [string]): string;
   encodeFunctionData(
     functionFragment: "projectPrice",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "projectStatus",
+    values: [string, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "rejectArr",
@@ -239,31 +186,15 @@ interface SafeMintInterface extends ethers.utils.Interface {
     functionFragment: "saveProject",
     values: [string, string, BigNumberish, BigNumberish, string]
   ): string;
+  encodeFunctionData(functionFragment: "token", values?: undefined): string;
   encodeFunctionData(functionFragment: "user", values: [string]): string;
 
-  decodeFunctionResult(
-    functionFragment: "ARBITRATOR_ROLE",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "AUDITOR_ROLE",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "Arbitrate", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "DEFAULT_ADMIN_ROLE",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "adminSetAuditPrice",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "adminSetChellengePrice",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "adminSetDuration",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -274,43 +205,22 @@ interface SafeMintInterface extends ethers.utils.Interface {
     functionFragment: "adminWithdraw",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "audit", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "auditPrice", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "auditRecord",
+    functionFragment: "auditorClaimFee",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "challenge", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "challengeArr",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "challengePrice",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "challengeRecord",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "claimAuditReward",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "claimChellengeReward",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "contractAddress",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "duration", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "editProject",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "feeRecord", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getChallenge",
     data: BytesLike
@@ -318,6 +228,11 @@ interface SafeMintInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "getLocked", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "getPassed", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "getPending", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "getProject", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "getProjectById",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "getReject", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getRoleAdmin",
@@ -338,6 +253,10 @@ interface SafeMintInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "grantRole", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "hasRole", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "lockedArr", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "namehashToId",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "passedArr", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "pendingArr", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "projectArr", data: BytesLike): Result;
@@ -350,6 +269,10 @@ interface SafeMintInterface extends ethers.utils.Interface {
     functionFragment: "projectPrice",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "projectStatus",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "rejectArr", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "renounceRole",
@@ -360,52 +283,28 @@ interface SafeMintInterface extends ethers.utils.Interface {
     functionFragment: "saveProject",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "token", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "user", data: BytesLike): Result;
 
   events: {
-    "ArbitrateProject(string,address,uint8)": EventFragment;
-    "AuditProject(string,address,uint256,string,uint8)": EventFragment;
-    "ChallengeProject(string,address,uint256,string)": EventFragment;
+    "AuditorClaimFee(string,uint256)": EventFragment;
     "EditProject(string,uint256,uint256,string)": EventFragment;
+    "ProjectStatus(string,uint8)": EventFragment;
     "RoleGranted(bytes32,address,address)": EventFragment;
     "RoleRevoked(bytes32,address,address)": EventFragment;
-    "SaveProject(string,address,address,uint256,uint256,uint256,string,uint256)": EventFragment;
+    "SaveProject(string,address,address,uint256,uint256,string,uint256,uint256)": EventFragment;
   };
 
-  getEvent(nameOrSignatureOrTopic: "ArbitrateProject"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "AuditProject"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "ChallengeProject"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "AuditorClaimFee"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "EditProject"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ProjectStatus"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleGranted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleRevoked"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SaveProject"): EventFragment;
 }
 
-export type ArbitrateProjectEvent = TypedEvent<
-  [string, string, number] & {
-    name: string;
-    arbitrator: string;
-    status: number;
-  }
->;
-
-export type AuditProjectEvent = TypedEvent<
-  [string, string, BigNumber, string, number] & {
-    name: string;
-    auditor: string;
-    auditPrice: BigNumber;
-    comments: string;
-    status: number;
-  }
->;
-
-export type ChallengeProjectEvent = TypedEvent<
-  [string, string, BigNumber, string] & {
-    name: string;
-    challenger: string;
-    challengePrice: BigNumber;
-    comments: string;
-  }
+export type AuditorClaimFeeEvent = TypedEvent<
+  [string, BigNumber] & { name: string; projectFee: BigNumber }
 >;
 
 export type EditProjectEvent = TypedEvent<
@@ -415,6 +314,10 @@ export type EditProjectEvent = TypedEvent<
     endTime: BigNumber;
     ipfsAddress: string;
   }
+>;
+
+export type ProjectStatusEvent = TypedEvent<
+  [string, number] & { name: string; status: number }
 >;
 
 export type RoleGrantedEvent = TypedEvent<
@@ -432,8 +335,8 @@ export type SaveProjectEvent = TypedEvent<
     string,
     BigNumber,
     BigNumber,
-    BigNumber,
     string,
+    BigNumber,
     BigNumber
   ] & {
     name: string;
@@ -441,8 +344,8 @@ export type SaveProjectEvent = TypedEvent<
     projectContract: string;
     startTime: BigNumber;
     endTime: BigNumber;
-    projectPrice: BigNumber;
     ipfsAddress: string;
+    projectPrice: BigNumber;
     projectId: BigNumber;
   }
 >;
@@ -491,32 +394,9 @@ export class SafeMint extends BaseContract {
   interface: SafeMintInterface;
 
   functions: {
-    ARBITRATOR_ROLE(overrides?: CallOverrides): Promise<[string]>;
-
     AUDITOR_ROLE(overrides?: CallOverrides): Promise<[string]>;
 
-    Arbitrate(
-      name: string,
-      status: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<[string]>;
-
-    adminSetAuditPrice(
-      _price: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    adminSetChellengePrice(
-      _price: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    adminSetDuration(
-      _duration: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
 
     adminSetProjectPrice(
       _price: BigNumberish,
@@ -528,34 +408,9 @@ export class SafeMint extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    audit(
+    auditorClaimFee(
       name: string,
-      comments: string,
-      status: BigNumberish,
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    auditPrice(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    auditRecord(
-      arg0: BigNumberish,
-      arg1: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, string, BigNumber, string, BigNumber, number] & {
-        projectId: BigNumber;
-        auditor: string;
-        auditTime: BigNumber;
-        comments: string;
-        auditFee: BigNumber;
-        status: number;
-      }
-    >;
-
-    challenge(
-      name: string,
-      comments: string,
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     challengeArr(
@@ -563,38 +418,10 @@ export class SafeMint extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
-    challengePrice(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    challengeRecord(
-      arg0: BigNumberish,
-      arg1: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, string, BigNumber, string, BigNumber] & {
-        projectId: BigNumber;
-        challenger: string;
-        time: BigNumber;
-        comments: string;
-        challengeFee: BigNumber;
-      }
-    >;
-
-    claimAuditReward(
-      _projectId: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    claimChellengeReward(
-      _projectId: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     contractAddress(
       arg0: string,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
-
-    duration(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     editProject(
       name: string,
@@ -603,17 +430,6 @@ export class SafeMint extends BaseContract {
       ipfsAddress: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
-
-    feeRecord(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, string, BigNumber] & {
-        auditTime: BigNumber;
-        auditor: string;
-        value: BigNumber;
-      }
-    >;
 
     getChallenge(
       start: BigNumberish,
@@ -735,6 +551,65 @@ export class SafeMint extends BaseContract {
       ]
     >;
 
+    getProject(
+      name: string,
+      overrides?: CallOverrides
+    ): Promise<
+      [
+        BigNumber,
+        [
+          string,
+          string,
+          BigNumber,
+          string,
+          BigNumber,
+          BigNumber,
+          string,
+          BigNumber,
+          number
+        ] & {
+          name: string;
+          owner: string;
+          createTime: BigNumber;
+          projectContract: string;
+          startTime: BigNumber;
+          endTime: BigNumber;
+          ipfsAddress: string;
+          projectFee: BigNumber;
+          status: number;
+        }
+      ]
+    >;
+
+    getProjectById(
+      _projectId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<
+      [
+        [
+          string,
+          string,
+          BigNumber,
+          string,
+          BigNumber,
+          BigNumber,
+          string,
+          BigNumber,
+          number
+        ] & {
+          name: string;
+          owner: string;
+          createTime: BigNumber;
+          projectContract: string;
+          startTime: BigNumber;
+          endTime: BigNumber;
+          ipfsAddress: string;
+          projectFee: BigNumber;
+          status: number;
+        }
+      ]
+    >;
+
     getReject(
       start: BigNumberish,
       limit: BigNumberish,
@@ -801,6 +676,11 @@ export class SafeMint extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
+    namehashToId(
+      arg0: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     passedArr(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -838,11 +718,17 @@ export class SafeMint extends BaseContract {
       }
     >;
 
-    projectId(arg0: BytesLike, overrides?: CallOverrides): Promise<[BigNumber]>;
+    projectId(name: string, overrides?: CallOverrides): Promise<[BigNumber]>;
 
     projectName(name: string, overrides?: CallOverrides): Promise<[boolean]>;
 
     projectPrice(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    projectStatus(
+      name: string,
+      status: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
 
     rejectArr(
       arg0: BigNumberish,
@@ -867,38 +753,17 @@ export class SafeMint extends BaseContract {
       startTime: BigNumberish,
       endTime: BigNumberish,
       ipfsAddress: string,
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
+
+    token(overrides?: CallOverrides): Promise<[string]>;
 
     user(arg0: string, overrides?: CallOverrides): Promise<[boolean]>;
   };
 
-  ARBITRATOR_ROLE(overrides?: CallOverrides): Promise<string>;
-
   AUDITOR_ROLE(overrides?: CallOverrides): Promise<string>;
 
-  Arbitrate(
-    name: string,
-    status: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
-
-  adminSetAuditPrice(
-    _price: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  adminSetChellengePrice(
-    _price: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  adminSetDuration(
-    _duration: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
 
   adminSetProjectPrice(
     _price: BigNumberish,
@@ -910,34 +775,9 @@ export class SafeMint extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  audit(
+  auditorClaimFee(
     name: string,
-    comments: string,
-    status: BigNumberish,
-    overrides?: PayableOverrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  auditPrice(overrides?: CallOverrides): Promise<BigNumber>;
-
-  auditRecord(
-    arg0: BigNumberish,
-    arg1: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<
-    [BigNumber, string, BigNumber, string, BigNumber, number] & {
-      projectId: BigNumber;
-      auditor: string;
-      auditTime: BigNumber;
-      comments: string;
-      auditFee: BigNumber;
-      status: number;
-    }
-  >;
-
-  challenge(
-    name: string,
-    comments: string,
-    overrides?: PayableOverrides & { from?: string | Promise<string> }
+    overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   challengeArr(
@@ -945,35 +785,7 @@ export class SafeMint extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  challengePrice(overrides?: CallOverrides): Promise<BigNumber>;
-
-  challengeRecord(
-    arg0: BigNumberish,
-    arg1: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<
-    [BigNumber, string, BigNumber, string, BigNumber] & {
-      projectId: BigNumber;
-      challenger: string;
-      time: BigNumber;
-      comments: string;
-      challengeFee: BigNumber;
-    }
-  >;
-
-  claimAuditReward(
-    _projectId: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  claimChellengeReward(
-    _projectId: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   contractAddress(arg0: string, overrides?: CallOverrides): Promise<boolean>;
-
-  duration(overrides?: CallOverrides): Promise<BigNumber>;
 
   editProject(
     name: string,
@@ -982,17 +794,6 @@ export class SafeMint extends BaseContract {
     ipfsAddress: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
-
-  feeRecord(
-    arg0: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<
-    [BigNumber, string, BigNumber] & {
-      auditTime: BigNumber;
-      auditor: string;
-      value: BigNumber;
-    }
-  >;
 
   getChallenge(
     start: BigNumberish,
@@ -1106,6 +907,63 @@ export class SafeMint extends BaseContract {
     })[]
   >;
 
+  getProject(
+    name: string,
+    overrides?: CallOverrides
+  ): Promise<
+    [
+      BigNumber,
+      [
+        string,
+        string,
+        BigNumber,
+        string,
+        BigNumber,
+        BigNumber,
+        string,
+        BigNumber,
+        number
+      ] & {
+        name: string;
+        owner: string;
+        createTime: BigNumber;
+        projectContract: string;
+        startTime: BigNumber;
+        endTime: BigNumber;
+        ipfsAddress: string;
+        projectFee: BigNumber;
+        status: number;
+      }
+    ]
+  >;
+
+  getProjectById(
+    _projectId: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<
+    [
+      string,
+      string,
+      BigNumber,
+      string,
+      BigNumber,
+      BigNumber,
+      string,
+      BigNumber,
+      number
+    ] & {
+      name: string;
+      owner: string;
+      createTime: BigNumber;
+      projectContract: string;
+      startTime: BigNumber;
+      endTime: BigNumber;
+      ipfsAddress: string;
+      projectFee: BigNumber;
+      status: number;
+    }
+  >;
+
   getReject(
     start: BigNumberish,
     limit: BigNumberish,
@@ -1167,6 +1025,8 @@ export class SafeMint extends BaseContract {
 
   lockedArr(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
+  namehashToId(arg0: BytesLike, overrides?: CallOverrides): Promise<BigNumber>;
+
   passedArr(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
   pendingArr(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
@@ -1198,11 +1058,17 @@ export class SafeMint extends BaseContract {
     }
   >;
 
-  projectId(arg0: BytesLike, overrides?: CallOverrides): Promise<BigNumber>;
+  projectId(name: string, overrides?: CallOverrides): Promise<BigNumber>;
 
   projectName(name: string, overrides?: CallOverrides): Promise<boolean>;
 
   projectPrice(overrides?: CallOverrides): Promise<BigNumber>;
+
+  projectStatus(
+    name: string,
+    status: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   rejectArr(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1224,38 +1090,17 @@ export class SafeMint extends BaseContract {
     startTime: BigNumberish,
     endTime: BigNumberish,
     ipfsAddress: string,
-    overrides?: PayableOverrides & { from?: string | Promise<string> }
+    overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
+
+  token(overrides?: CallOverrides): Promise<string>;
 
   user(arg0: string, overrides?: CallOverrides): Promise<boolean>;
 
   callStatic: {
-    ARBITRATOR_ROLE(overrides?: CallOverrides): Promise<string>;
-
     AUDITOR_ROLE(overrides?: CallOverrides): Promise<string>;
 
-    Arbitrate(
-      name: string,
-      status: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
-
-    adminSetAuditPrice(
-      _price: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    adminSetChellengePrice(
-      _price: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    adminSetDuration(
-      _duration: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
 
     adminSetProjectPrice(
       _price: BigNumberish,
@@ -1264,70 +1109,14 @@ export class SafeMint extends BaseContract {
 
     adminWithdraw(to: string, overrides?: CallOverrides): Promise<void>;
 
-    audit(
-      name: string,
-      comments: string,
-      status: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    auditPrice(overrides?: CallOverrides): Promise<BigNumber>;
-
-    auditRecord(
-      arg0: BigNumberish,
-      arg1: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, string, BigNumber, string, BigNumber, number] & {
-        projectId: BigNumber;
-        auditor: string;
-        auditTime: BigNumber;
-        comments: string;
-        auditFee: BigNumber;
-        status: number;
-      }
-    >;
-
-    challenge(
-      name: string,
-      comments: string,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    auditorClaimFee(name: string, overrides?: CallOverrides): Promise<void>;
 
     challengeArr(
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    challengePrice(overrides?: CallOverrides): Promise<BigNumber>;
-
-    challengeRecord(
-      arg0: BigNumberish,
-      arg1: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, string, BigNumber, string, BigNumber] & {
-        projectId: BigNumber;
-        challenger: string;
-        time: BigNumber;
-        comments: string;
-        challengeFee: BigNumber;
-      }
-    >;
-
-    claimAuditReward(
-      _projectId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    claimChellengeReward(
-      _projectId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
     contractAddress(arg0: string, overrides?: CallOverrides): Promise<boolean>;
-
-    duration(overrides?: CallOverrides): Promise<BigNumber>;
 
     editProject(
       name: string,
@@ -1336,17 +1125,6 @@ export class SafeMint extends BaseContract {
       ipfsAddress: string,
       overrides?: CallOverrides
     ): Promise<void>;
-
-    feeRecord(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, string, BigNumber] & {
-        auditTime: BigNumber;
-        auditor: string;
-        value: BigNumber;
-      }
-    >;
 
     getChallenge(
       start: BigNumberish,
@@ -1458,6 +1236,63 @@ export class SafeMint extends BaseContract {
         projectFee: BigNumber;
         status: number;
       })[]
+    >;
+
+    getProject(
+      name: string,
+      overrides?: CallOverrides
+    ): Promise<
+      [
+        BigNumber,
+        [
+          string,
+          string,
+          BigNumber,
+          string,
+          BigNumber,
+          BigNumber,
+          string,
+          BigNumber,
+          number
+        ] & {
+          name: string;
+          owner: string;
+          createTime: BigNumber;
+          projectContract: string;
+          startTime: BigNumber;
+          endTime: BigNumber;
+          ipfsAddress: string;
+          projectFee: BigNumber;
+          status: number;
+        }
+      ]
+    >;
+
+    getProjectById(
+      _projectId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<
+      [
+        string,
+        string,
+        BigNumber,
+        string,
+        BigNumber,
+        BigNumber,
+        string,
+        BigNumber,
+        number
+      ] & {
+        name: string;
+        owner: string;
+        createTime: BigNumber;
+        projectContract: string;
+        startTime: BigNumber;
+        endTime: BigNumber;
+        ipfsAddress: string;
+        projectFee: BigNumber;
+        status: number;
+      }
     >;
 
     getReject(
@@ -1524,6 +1359,11 @@ export class SafeMint extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    namehashToId(
+      arg0: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     passedArr(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -1561,11 +1401,17 @@ export class SafeMint extends BaseContract {
       }
     >;
 
-    projectId(arg0: BytesLike, overrides?: CallOverrides): Promise<BigNumber>;
+    projectId(name: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     projectName(name: string, overrides?: CallOverrides): Promise<boolean>;
 
     projectPrice(overrides?: CallOverrides): Promise<BigNumber>;
+
+    projectStatus(
+      name: string,
+      status: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     rejectArr(
       arg0: BigNumberish,
@@ -1593,90 +1439,26 @@ export class SafeMint extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    token(overrides?: CallOverrides): Promise<string>;
+
     user(arg0: string, overrides?: CallOverrides): Promise<boolean>;
   };
 
   filters: {
-    "ArbitrateProject(string,address,uint8)"(
+    "AuditorClaimFee(string,uint256)"(
       name?: string | null,
-      arbitrator?: string | null,
-      status?: null
+      projectFee?: null
     ): TypedEventFilter<
-      [string, string, number],
-      { name: string; arbitrator: string; status: number }
+      [string, BigNumber],
+      { name: string; projectFee: BigNumber }
     >;
 
-    ArbitrateProject(
+    AuditorClaimFee(
       name?: string | null,
-      arbitrator?: string | null,
-      status?: null
+      projectFee?: null
     ): TypedEventFilter<
-      [string, string, number],
-      { name: string; arbitrator: string; status: number }
-    >;
-
-    "AuditProject(string,address,uint256,string,uint8)"(
-      name?: string | null,
-      auditor?: string | null,
-      auditPrice?: null,
-      comments?: null,
-      status?: null
-    ): TypedEventFilter<
-      [string, string, BigNumber, string, number],
-      {
-        name: string;
-        auditor: string;
-        auditPrice: BigNumber;
-        comments: string;
-        status: number;
-      }
-    >;
-
-    AuditProject(
-      name?: string | null,
-      auditor?: string | null,
-      auditPrice?: null,
-      comments?: null,
-      status?: null
-    ): TypedEventFilter<
-      [string, string, BigNumber, string, number],
-      {
-        name: string;
-        auditor: string;
-        auditPrice: BigNumber;
-        comments: string;
-        status: number;
-      }
-    >;
-
-    "ChallengeProject(string,address,uint256,string)"(
-      name?: string | null,
-      challenger?: string | null,
-      challengePrice?: null,
-      comments?: null
-    ): TypedEventFilter<
-      [string, string, BigNumber, string],
-      {
-        name: string;
-        challenger: string;
-        challengePrice: BigNumber;
-        comments: string;
-      }
-    >;
-
-    ChallengeProject(
-      name?: string | null,
-      challenger?: string | null,
-      challengePrice?: null,
-      comments?: null
-    ): TypedEventFilter<
-      [string, string, BigNumber, string],
-      {
-        name: string;
-        challenger: string;
-        challengePrice: BigNumber;
-        comments: string;
-      }
+      [string, BigNumber],
+      { name: string; projectFee: BigNumber }
     >;
 
     "EditProject(string,uint256,uint256,string)"(
@@ -1708,6 +1490,16 @@ export class SafeMint extends BaseContract {
         ipfsAddress: string;
       }
     >;
+
+    "ProjectStatus(string,uint8)"(
+      name?: string | null,
+      status?: null
+    ): TypedEventFilter<[string, number], { name: string; status: number }>;
+
+    ProjectStatus(
+      name?: string | null,
+      status?: null
+    ): TypedEventFilter<[string, number], { name: string; status: number }>;
 
     "RoleGranted(bytes32,address,address)"(
       role?: BytesLike | null,
@@ -1745,14 +1537,14 @@ export class SafeMint extends BaseContract {
       { role: string; account: string; sender: string }
     >;
 
-    "SaveProject(string,address,address,uint256,uint256,uint256,string,uint256)"(
+    "SaveProject(string,address,address,uint256,uint256,string,uint256,uint256)"(
       name?: string | null,
       owner?: string | null,
       projectContract?: string | null,
       startTime?: null,
       endTime?: null,
-      projectPrice?: null,
       ipfsAddress?: null,
+      projectPrice?: null,
       projectId?: null
     ): TypedEventFilter<
       [
@@ -1761,8 +1553,8 @@ export class SafeMint extends BaseContract {
         string,
         BigNumber,
         BigNumber,
-        BigNumber,
         string,
+        BigNumber,
         BigNumber
       ],
       {
@@ -1771,8 +1563,8 @@ export class SafeMint extends BaseContract {
         projectContract: string;
         startTime: BigNumber;
         endTime: BigNumber;
-        projectPrice: BigNumber;
         ipfsAddress: string;
+        projectPrice: BigNumber;
         projectId: BigNumber;
       }
     >;
@@ -1783,8 +1575,8 @@ export class SafeMint extends BaseContract {
       projectContract?: string | null,
       startTime?: null,
       endTime?: null,
-      projectPrice?: null,
       ipfsAddress?: null,
+      projectPrice?: null,
       projectId?: null
     ): TypedEventFilter<
       [
@@ -1793,8 +1585,8 @@ export class SafeMint extends BaseContract {
         string,
         BigNumber,
         BigNumber,
-        BigNumber,
         string,
+        BigNumber,
         BigNumber
       ],
       {
@@ -1803,40 +1595,17 @@ export class SafeMint extends BaseContract {
         projectContract: string;
         startTime: BigNumber;
         endTime: BigNumber;
-        projectPrice: BigNumber;
         ipfsAddress: string;
+        projectPrice: BigNumber;
         projectId: BigNumber;
       }
     >;
   };
 
   estimateGas: {
-    ARBITRATOR_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
-
     AUDITOR_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
 
-    Arbitrate(
-      name: string,
-      status: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
-
-    adminSetAuditPrice(
-      _price: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    adminSetChellengePrice(
-      _price: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    adminSetDuration(
-      _duration: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
 
     adminSetProjectPrice(
       _price: BigNumberish,
@@ -1848,25 +1617,9 @@ export class SafeMint extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    audit(
+    auditorClaimFee(
       name: string,
-      comments: string,
-      status: BigNumberish,
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    auditPrice(overrides?: CallOverrides): Promise<BigNumber>;
-
-    auditRecord(
-      arg0: BigNumberish,
-      arg1: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    challenge(
-      name: string,
-      comments: string,
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     challengeArr(
@@ -1874,30 +1627,10 @@ export class SafeMint extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    challengePrice(overrides?: CallOverrides): Promise<BigNumber>;
-
-    challengeRecord(
-      arg0: BigNumberish,
-      arg1: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    claimAuditReward(
-      _projectId: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    claimChellengeReward(
-      _projectId: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
     contractAddress(
       arg0: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    duration(overrides?: CallOverrides): Promise<BigNumber>;
 
     editProject(
       name: string,
@@ -1905,11 +1638,6 @@ export class SafeMint extends BaseContract {
       endTime: BigNumberish,
       ipfsAddress: string,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    feeRecord(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     getChallenge(
@@ -1933,6 +1661,13 @@ export class SafeMint extends BaseContract {
     getPending(
       start: BigNumberish,
       limit: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getProject(name: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+    getProjectById(
+      _projectId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1981,6 +1716,11 @@ export class SafeMint extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    namehashToId(
+      arg0: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     passedArr(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -1996,11 +1736,17 @@ export class SafeMint extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    projectId(arg0: BytesLike, overrides?: CallOverrides): Promise<BigNumber>;
+    projectId(name: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     projectName(name: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     projectPrice(overrides?: CallOverrides): Promise<BigNumber>;
+
+    projectStatus(
+      name: string,
+      status: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
 
     rejectArr(
       arg0: BigNumberish,
@@ -2025,40 +1771,19 @@ export class SafeMint extends BaseContract {
       startTime: BigNumberish,
       endTime: BigNumberish,
       ipfsAddress: string,
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
+
+    token(overrides?: CallOverrides): Promise<BigNumber>;
 
     user(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    ARBITRATOR_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
     AUDITOR_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    Arbitrate(
-      name: string,
-      status: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
 
     DEFAULT_ADMIN_ROLE(
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    adminSetAuditPrice(
-      _price: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    adminSetChellengePrice(
-      _price: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    adminSetDuration(
-      _duration: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     adminSetProjectPrice(
@@ -2071,25 +1796,9 @@ export class SafeMint extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    audit(
+    auditorClaimFee(
       name: string,
-      comments: string,
-      status: BigNumberish,
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    auditPrice(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    auditRecord(
-      arg0: BigNumberish,
-      arg1: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    challenge(
-      name: string,
-      comments: string,
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     challengeArr(
@@ -2097,30 +1806,10 @@ export class SafeMint extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    challengePrice(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    challengeRecord(
-      arg0: BigNumberish,
-      arg1: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    claimAuditReward(
-      _projectId: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    claimChellengeReward(
-      _projectId: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
     contractAddress(
       arg0: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
-
-    duration(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     editProject(
       name: string,
@@ -2128,11 +1817,6 @@ export class SafeMint extends BaseContract {
       endTime: BigNumberish,
       ipfsAddress: string,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    feeRecord(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getChallenge(
@@ -2156,6 +1840,16 @@ export class SafeMint extends BaseContract {
     getPending(
       start: BigNumberish,
       limit: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getProject(
+      name: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getProjectById(
+      _projectId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -2201,6 +1895,11 @@ export class SafeMint extends BaseContract {
 
     lockedArr(
       arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    namehashToId(
+      arg0: BytesLike,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -2220,7 +1919,7 @@ export class SafeMint extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     projectId(
-      arg0: BytesLike,
+      name: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -2230,6 +1929,12 @@ export class SafeMint extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     projectPrice(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    projectStatus(
+      name: string,
+      status: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
 
     rejectArr(
       arg0: BigNumberish,
@@ -2254,8 +1959,10 @@ export class SafeMint extends BaseContract {
       startTime: BigNumberish,
       endTime: BigNumberish,
       ipfsAddress: string,
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
+
+    token(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     user(
       arg0: string,

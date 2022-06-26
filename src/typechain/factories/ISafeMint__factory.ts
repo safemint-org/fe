@@ -17,87 +17,13 @@ const _abi = [
         type: "string",
       },
       {
-        indexed: true,
-        internalType: "address",
-        name: "arbitrator",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "enum ISafeMint.Status",
-        name: "status",
-        type: "uint8",
-      },
-    ],
-    name: "ArbitrateProject",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "string",
-        name: "name",
-        type: "string",
-      },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "auditor",
-        type: "address",
-      },
-      {
         indexed: false,
         internalType: "uint256",
-        name: "auditPrice",
+        name: "projectFee",
         type: "uint256",
       },
-      {
-        indexed: false,
-        internalType: "string",
-        name: "comments",
-        type: "string",
-      },
-      {
-        indexed: false,
-        internalType: "enum ISafeMint.Status",
-        name: "status",
-        type: "uint8",
-      },
     ],
-    name: "AuditProject",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "string",
-        name: "name",
-        type: "string",
-      },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "challenger",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "challengePrice",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "string",
-        name: "comments",
-        type: "string",
-      },
-    ],
-    name: "ChallengeProject",
+    name: "AuditorClaimFee",
     type: "event",
   },
   {
@@ -141,6 +67,25 @@ const _abi = [
         type: "string",
       },
       {
+        indexed: false,
+        internalType: "enum ISafeMint.Status",
+        name: "status",
+        type: "uint8",
+      },
+    ],
+    name: "ProjectStatus",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "string",
+        name: "name",
+        type: "string",
+      },
+      {
         indexed: true,
         internalType: "address",
         name: "owner",
@@ -166,15 +111,15 @@ const _abi = [
       },
       {
         indexed: false,
-        internalType: "uint256",
-        name: "projectPrice",
-        type: "uint256",
-      },
-      {
-        indexed: false,
         internalType: "string",
         name: "ipfsAddress",
         type: "string",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "projectPrice",
+        type: "uint256",
       },
       {
         indexed: false,
@@ -185,6 +130,193 @@ const _abi = [
     ],
     name: "SaveProject",
     type: "event",
+  },
+  {
+    inputs: [
+      {
+        internalType: "string",
+        name: "name",
+        type: "string",
+      },
+    ],
+    name: "auditorClaimFee",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "string",
+        name: "name",
+        type: "string",
+      },
+    ],
+    name: "getProject",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+      {
+        components: [
+          {
+            internalType: "string",
+            name: "name",
+            type: "string",
+          },
+          {
+            internalType: "address",
+            name: "owner",
+            type: "address",
+          },
+          {
+            internalType: "uint256",
+            name: "createTime",
+            type: "uint256",
+          },
+          {
+            internalType: "address",
+            name: "projectContract",
+            type: "address",
+          },
+          {
+            internalType: "uint256",
+            name: "startTime",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "endTime",
+            type: "uint256",
+          },
+          {
+            internalType: "string",
+            name: "ipfsAddress",
+            type: "string",
+          },
+          {
+            internalType: "uint256",
+            name: "projectFee",
+            type: "uint256",
+          },
+          {
+            internalType: "enum ISafeMint.Status",
+            name: "status",
+            type: "uint8",
+          },
+        ],
+        internalType: "struct ISafeMint.Project",
+        name: "",
+        type: "tuple",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_projectId",
+        type: "uint256",
+      },
+    ],
+    name: "getProjectById",
+    outputs: [
+      {
+        components: [
+          {
+            internalType: "string",
+            name: "name",
+            type: "string",
+          },
+          {
+            internalType: "address",
+            name: "owner",
+            type: "address",
+          },
+          {
+            internalType: "uint256",
+            name: "createTime",
+            type: "uint256",
+          },
+          {
+            internalType: "address",
+            name: "projectContract",
+            type: "address",
+          },
+          {
+            internalType: "uint256",
+            name: "startTime",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "endTime",
+            type: "uint256",
+          },
+          {
+            internalType: "string",
+            name: "ipfsAddress",
+            type: "string",
+          },
+          {
+            internalType: "uint256",
+            name: "projectFee",
+            type: "uint256",
+          },
+          {
+            internalType: "enum ISafeMint.Status",
+            name: "status",
+            type: "uint8",
+          },
+        ],
+        internalType: "struct ISafeMint.Project",
+        name: "",
+        type: "tuple",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "string",
+        name: "name",
+        type: "string",
+      },
+    ],
+    name: "projectId",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "string",
+        name: "name",
+        type: "string",
+      },
+      {
+        internalType: "enum ISafeMint.Status",
+        name: "status",
+        type: "uint8",
+      },
+    ],
+    name: "projectStatus",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
 ];
 
