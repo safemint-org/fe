@@ -17,18 +17,106 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.AccessControl__factory>;
     getContractFactory(
+      name: "IAccessControl",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IAccessControl__factory>;
+    getContractFactory(
+      name: "ERC20",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ERC20__factory>;
+    getContractFactory(
+      name: "ERC20Burnable",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ERC20Burnable__factory>;
+    getContractFactory(
+      name: "IERC20Metadata",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC20Metadata__factory>;
+    getContractFactory(
+      name: "IERC20",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC20__factory>;
+    getContractFactory(
+      name: "ERC165",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ERC165__factory>;
+    getContractFactory(
+      name: "IERC165",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC165__factory>;
+    getContractFactory(
+      name: "AccessControl",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.AccessControl__factory>;
+    getContractFactory(
       name: "ISafeMint",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ISafeMint__factory>;
+    getContractFactory(
+      name: "ISafeMintAudit",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ISafeMintAudit__factory>;
     getContractFactory(
       name: "SafeMint",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.SafeMint__factory>;
     getContractFactory(
+      name: "SafeMintAudit",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.SafeMintAudit__factory>;
+    getContractFactory(
+      name: "SafeMintAuditData",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.SafeMintAuditData__factory>;
+    getContractFactory(
       name: "SafeMintData",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.SafeMintData__factory>;
+    getContractFactory(
+      name: "TokenERC20",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.TokenERC20__factory>;
 
+    getContractAt(
+      name: "AccessControl",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.AccessControl>;
+    getContractAt(
+      name: "IAccessControl",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IAccessControl>;
+    getContractAt(
+      name: "ERC20",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ERC20>;
+    getContractAt(
+      name: "ERC20Burnable",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ERC20Burnable>;
+    getContractAt(
+      name: "IERC20Metadata",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC20Metadata>;
+    getContractAt(
+      name: "IERC20",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC20>;
+    getContractAt(
+      name: "ERC165",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ERC165>;
+    getContractAt(
+      name: "IERC165",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC165>;
     getContractAt(
       name: "AccessControl",
       address: string,
@@ -40,15 +128,35 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.ISafeMint>;
     getContractAt(
+      name: "ISafeMintAudit",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ISafeMintAudit>;
+    getContractAt(
       name: "SafeMint",
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.SafeMint>;
     getContractAt(
+      name: "SafeMintAudit",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.SafeMintAudit>;
+    getContractAt(
+      name: "SafeMintAuditData",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.SafeMintAuditData>;
+    getContractAt(
       name: "SafeMintData",
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.SafeMintData>;
+    getContractAt(
+      name: "TokenERC20",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.TokenERC20>;
 
     // default types
     getContractFactory(
