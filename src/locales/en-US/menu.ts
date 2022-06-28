@@ -1,5 +1,6 @@
 export default {
   'menu.submit': 'Submit',
+  'menu.explore': 'Explore',
   'menu.more-blocks': 'More Blocks',
   'menu.home': 'Home',
   'menu.admin': 'Admin',

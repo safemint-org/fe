@@ -11,7 +11,7 @@
   },
   {
     path: '/explore',
-    name: 'Explore',
+    name: 'explore',
     component: './Explore',
   },
   {
@@ -22,7 +22,7 @@
 
   {
     path: '/',
-    redirect: '/submit',
+    redirect: '/home',
   },
   {
     component: './404',
