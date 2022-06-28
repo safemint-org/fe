@@ -23,7 +23,25 @@ import { SafeMint__factory } from '@/typechain/factories/SafeMint__factory';
 
 
 // import Account from '@/components/RightContent/Account'
+interface IAppState {
+  fetching: boolean;
+  address: string;
+  web3: any;
+  provider: any;
+  connected: boolean;
+  chainId: number;
+  networkId: number;
+}
 
+const INITIAL_STATE: IAppState = {
+  fetching: false,
+  address: '',
+  web3: null,
+  provider: null,
+  connected: false,
+  chainId: 4,
+  networkId: 1,
+};
 
 export type SiderTheme = 'light' | 'dark';
 

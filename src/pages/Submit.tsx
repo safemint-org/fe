@@ -113,6 +113,7 @@ const submit: React.FC = () => {
       );
       if (data.message !== 'OK') {
         message.error('调用合约失败，请检查合约地址');
+        setLoading(false)
         return false;
       }
       message.success('合约获取成功');
@@ -130,12 +131,15 @@ const submit: React.FC = () => {
       setLoading(false);
     }
     if (cur == 2) {
+      setLoading(true);
       const { IpfsHash } = await uploadProjectMetadata(stepData)
       if (!IpfsHash) {
         message.error('上传失败');
+        setLoading(false)
         return false;
       }
       setIpfsHash(IpfsHash)
+      setLoading(false)
     }
     setCurrent(cur);
     setStepData((obj) => {
@@ -147,6 +151,7 @@ const submit: React.FC = () => {
       const contract = new ethers.Contract('0x3b68C1Cd8DD6C40aFFf144EA7094a7097FbBEdca', SafeMint__factory.abi, connection.signer)
       try {
         const data = await contract.saveProject(stepData.name, stepData.address, 0, 20, getIpfsHash)
+        message.success('上传成功');
         // 清空
         localStorage.setItem('safe-mint-dao', '')
 
@@ -427,16 +432,27 @@ const submit: React.FC = () => {
               }
             }} />
           </div>
-        </StepsForm.StepForm>
+          <div>
 
+          </div>
+        </StepsForm.StepForm>
+        <div className={styles.stepUp3}></div>
         <StepsForm.StepForm title="Check & Submit"></StepsForm.StepForm>
       </StepsForm>
+      <div className={styles.stepHeight}></div>
       <div className={current === 2 ? styles.submitReactPreviewLast : styles.submitReactPreview}>
         <div className={styles.Previewtext}>Preview</div>
         <ReactPreview isComponent={true} data={stepData} />
-        {current === 2 && (<Button type="primary" loading={loading} onClick={() => upIpfs}>
-          NEXT: File Function
-        </Button>)}
+        {current === 2 && (
+          <div className={styles.stepUp3div}>
+            <Button onClick={() => setCurrent(1)}>
+              save
+            </Button>
+            <Button type="primary" className={styles.stepUp3button} loading={loading} onClick={upIpfs}>
+              Check & Submit
+            </Button>
+          </div>
+        )}
       </div>
       {/* <Divider style={{ margin: '40px 0 24px' }} /> */}
     </Card >
