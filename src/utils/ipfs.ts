@@ -123,6 +123,6 @@ export const getPinnedListByTag = (tag: keyof typeof IPFS_TAGS) =>
 
 export const getProjectMetadata = (cid: string) => {
   const url = ipfsCidUrl(cid);
-  console.log(url);
+  // console.log(url);
   return axios.get(url).then((res) => res.data as ProjectInfo);
 };

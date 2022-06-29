@@ -27,14 +27,13 @@ export const getPassed = async () => {
   console.log('getPassed info');
   var projectInfos = [];
   if (projectInfo.length > 0) {
-    console.log(projectInfo);
-    //   console.log(ipfsCidUrl('QmYYH5RfCukNRyr9pdy68AHMJr3nFV94CopyTcFbKDGuBW'));
+    // console.log(projectInfo);
 
     projectInfo.forEach(async (item, index) => {
       if (index == 0) {
         return;
       }
-      const ipfsAddress = 'QmYYH5RfCukNRyr9pdy68AHMJr3nFV94CopyTcFbKDGuBW';
+      const ipfsAddress = item.ipfsAddress;
       const storageData = localStorage.getItem(ipfsAddress);
 
       if (storageData == null) {
@@ -43,7 +42,7 @@ export const getPassed = async () => {
         localStorage.setItem(ipfsAddress, JSON.stringify(projectMetadata));
       } else {
         const projectMetadata = JSON.parse(storageData) as ProjectInfo;
-        console.log(projectMetadata);
+        // console.log(projectMetadata);
         projectInfos.push(projectMetadata);
       }
 
@@ -60,11 +59,8 @@ export default function Explore() {
   useEffect(() => {
     //start();
     const infos = getPassed();
-    console.log('infos');
     infos.then((res) => {
-      console.log(res);
       setInfos(res);
-      console.log(infos);
     });
   }, []);
 
