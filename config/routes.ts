@@ -15,6 +15,7 @@
     component: './Explore',
   },
   {
+    hideInMenu: true,
     path: '/preview',
     name: 'preview',
     component: './Preview',

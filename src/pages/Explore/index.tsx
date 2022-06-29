@@ -4,28 +4,68 @@ import ImageCommon from '@/assets/common';
 import { BaseInput, FlexViewCenter } from '@/components/Common';
 import { NetworkId } from '@/constants/networks';
 import { Providers } from '@/helpers/providers/Providers';
-import { useTrendingProjects } from '@/hooks/Projects';
+import { ProjectInfo } from '@/helpers/types';
 import { SafeMint__factory } from '@/typechain/factories/SafeMint__factory';
-import { autoWidthVW } from '@/utils/utils';
+import { getProjectMetadata } from '@/utils/ipfs';
+import { autoWidthVW, ellipseAddress } from '@/utils/utils';
 import { DownOutlined } from '@ant-design/icons';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import { Link } from 'umi';
 
 require('./index.less');
 
 export const getPassed = async () => {
+  console.log('getPassed start');
   const provider = Providers.getStaticProvider(NetworkId.TESTNET_RINKEBY);
-  const contract = SafeMint__factory.connect('', provider);
-  const [name, owner] = await contract.getPassed(0, 10);
-  console.log(name, owner);
+  const contract = SafeMint__factory.connect(
+    '0x3b68C1Cd8DD6C40aFFf144EA7094a7097FbBEdca',
+    provider,
+  );
+  // const [name, owner] = await contract.getPassed(1, 10);
+  const projectInfo = await contract.getPending(0, 10);
+  console.log('getPassed info');
+  var projectInfos = [];
+  if (projectInfo.length > 0) {
+    console.log(projectInfo);
+    //   console.log(ipfsCidUrl('QmYYH5RfCukNRyr9pdy68AHMJr3nFV94CopyTcFbKDGuBW'));
+
+    projectInfo.forEach(async (item, index) => {
+      if (index == 0) {
+        return;
+      }
+      const ipfsAddress = 'QmYYH5RfCukNRyr9pdy68AHMJr3nFV94CopyTcFbKDGuBW';
+      const storageData = localStorage.getItem(ipfsAddress);
+
+      if (storageData == null) {
+        const projectMetadata = await getProjectMetadata(ipfsAddress);
+        projectInfos.push(projectMetadata);
+        localStorage.setItem(ipfsAddress, JSON.stringify(projectMetadata));
+      } else {
+        const projectMetadata = JSON.parse(storageData) as ProjectInfo;
+        console.log(projectMetadata);
+        projectInfos.push(projectMetadata);
+      }
+
+      //  const projectMetadata = await getProjectMetadata(item.ipfsAddress);
+    });
+  }
+  return projectInfos;
+  //console.log(name, owner);
 };
 
 export default function Explore() {
-  useTrendingProjects();
+  // useTrendingProjects();
+  const [infos, setInfos] = useState([]);
   useEffect(() => {
     //start();
-    getPassed();
+    const infos = getPassed();
+    console.log('infos');
+    infos.then((res) => {
+      console.log(res);
+      setInfos(res);
+      console.log(infos);
+    });
   }, []);
 
   return (
@@ -33,7 +73,14 @@ export default function Explore() {
       <H1>Explore Projects</H1>
       <SortComponent></SortComponent>
       <ItemContainer>
-        <a href="/preview">
+        {infos?.map((item) => {
+          return (
+            <Link to={{ pathname: '/preview', info: item }}>
+              <Item item={item}></Item>
+            </Link>
+          );
+        })}
+        {/* <a href="/preview">
           <Item></Item>
         </a>
         <a href="/preview">
@@ -50,47 +97,58 @@ export default function Explore() {
         </Link>
         <Link to={{ pathname: '/preview', info: { name: '测试内容', address: '0x123adas4' } }}>
           <Item></Item>
-        </Link>
+        </Link> */}
       </ItemContainer>
     </Container>
   );
 }
 
-function Item() {
+const Item = (props) => {
+  console.log('内容');
+  console.log(props.item);
   return (
     <Content>
-      <img src={ImageCommon.banner_explore} style={{ width: '100%' }} />
+      <img
+        src={props.item?.banner ? props.item?.banner : ImageCommon.banner_preview}
+        style={{ width: '100%', height: 80 }}
+      />
       <MainContent>
         <Row justify={'center'}>
-          <UserIcon src={ImageCommon.user_icon}></UserIcon>
+          <UserIcon
+            src={props.item?.logol != undefined ? props.item?.logol : ImageCommon.user_icon}
+          ></UserIcon>
         </Row>
         <ContractInfo>
           <div></div>
           <div>
-            <UserName>CRYPTOMEWO</UserName>
+            <UserName>{props.item.name}</UserName>
             <Row justify={'center'} align={'middle'}>
               <ContractTitle>Contract：</ContractTitle>
-              <ContractAddr>0x1234..3254</ContractAddr>
+              <ContractAddr>{ellipseAddress(props.item.address)}</ContractAddr>
               <ChainIcon src={ImageCommon.ETH}></ChainIcon>
             </Row>
           </div>
         </ContractInfo>
-        <Description>
+        {/* <Description>
           {'Supports projects built using the Juicebox protocol, and the development of the protocol itself. All projects withdrawing funds from their treasury.'.slice(
             0,
             80,
           )}
           <ReadMore>Read More</ReadMore>
+        </Description> */}
+        <Description>
+          {props.item.description}
+          <ReadMore>Read More</ReadMore>
         </Description>
 
         <InfoContainer>
           <div>
-            <InfoTitle>Holder</InfoTitle>
-            <InfoDesc>10,0K</InfoDesc>
+            <InfoTitle>TOTAL SUPPLY</InfoTitle>
+            <InfoDesc>{props.item?.supply == '' ? 'UnKnow' : props.item?.supply}</InfoDesc>
           </div>
           <div>
             <InfoTitle>Refundable?</InfoTitle>
-            <InfoDesc>2K</InfoDesc>
+            <InfoDesc>{props.item?.refundable ? 'YES' : 'NO'}</InfoDesc>
           </div>
           <div>
             <PropertyBtn>WHITELIST ONLY</PropertyBtn>
@@ -101,17 +159,28 @@ function Item() {
         {/*<ProgressBar></ProgressBar>*/}
         <BottomContainer justify={'space-between'} align={'middle'}>
           <Row>
-            <WebsiteIcon src={ImageCommon.website}></WebsiteIcon>
-            <WebsiteIcon src={ImageCommon.twitter}></WebsiteIcon>
+            {props.item?.website != '' ? (
+              <WebsiteIcon src={ImageCommon.website}></WebsiteIcon>
+            ) : null}
+            {props.item?.twitter != '' ? (
+              <WebsiteIcon src={ImageCommon.twitter}></WebsiteIcon>
+            ) : null}
+            {props.item?.discord != '' ? (
+              <WebsiteIcon src={ImageCommon.discord}></WebsiteIcon>
+            ) : null}
+            {props.item?.telegram != '' ? (
+              <WebsiteIcon src={ImageCommon.telegram}></WebsiteIcon>
+            ) : null}
+            {/* <WebsiteIcon src={ImageCommon.twitter}></WebsiteIcon>
             <WebsiteIcon src={ImageCommon.discord}></WebsiteIcon>
-            <WebsiteIcon src={ImageCommon.telegram}></WebsiteIcon>
+            <WebsiteIcon src={ImageCommon.telegram}></WebsiteIcon> */}
           </Row>
           <Btn>Safemint</Btn>
         </BottomContainer>
       </MainContent>
     </Content>
   );
-}
+};
 function SortComponent() {
   const menu = (
     <Menu

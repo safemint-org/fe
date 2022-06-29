@@ -44,18 +44,26 @@ const ReactPreview: React.FC<IPreview> = (props) => {
                 </Row>
               </div>
               <Row justify={'space-between'}>
-                <a href={data?.website}>
-                  <WebsiteIcon src={ImageCommon.website}></WebsiteIcon>
-                </a>
-                <a href={data?.twitter}>
-                  <WebsiteIcon src={ImageCommon.twitter}></WebsiteIcon>
-                </a>
-                <a href={data?.discord}>
-                  <WebsiteIcon src={ImageCommon.discord}></WebsiteIcon>
-                </a>
-                <a href={data?.telegram}>
-                  <WebsiteIcon src={ImageCommon.telegram}></WebsiteIcon>
-                </a>
+                {data?.website != '' ? (
+                  <a href={data?.website}>
+                    <WebsiteIcon src={ImageCommon.website}></WebsiteIcon>
+                  </a>
+                ) : null}
+                {data?.twitter != '' ? (
+                  <a href={data?.twitter}>
+                    <WebsiteIcon src={ImageCommon.twitter}></WebsiteIcon>
+                  </a>
+                ) : null}{' '}
+                {data?.discord != '' ? (
+                  <a href={data?.discord}>
+                    <WebsiteIcon src={ImageCommon.discord}></WebsiteIcon>
+                  </a>
+                ) : null}
+                {data?.telegram != '' ? (
+                  <a href={data?.telegram}>
+                    <WebsiteIcon src={ImageCommon.telegram}></WebsiteIcon>
+                  </a>
+                ) : null}
               </Row>
             </ContractInfo>
             <DescriptionTitle align={'middle'}>
@@ -86,7 +94,7 @@ const ReactPreview: React.FC<IPreview> = (props) => {
               </div>
               <div>
                 <InfoTitle>START TIME</InfoTitle>
-                <InfoDesc>2022-02-01</InfoDesc>
+                <InfoDesc>{data?.time?.toString()}</InfoDesc>
               </div>
             </InfoContainer>
             <PropertyContainer justify={'center'}>
@@ -111,7 +119,7 @@ const ReactPreview: React.FC<IPreview> = (props) => {
               );
             })}
 
-            <div>
+            {/* <div>
               <FuncName>BanaceOf</FuncName>
               <FuncDesc>Function description is here. Function description is here.</FuncDesc>
             </div>
@@ -125,7 +133,7 @@ const ReactPreview: React.FC<IPreview> = (props) => {
                   <Price>1ETH</Price>
                 </div>
               </FuncInfo>
-            </div>
+            </div> */}
           </MainContent>
         </Content>
       </Col>

@@ -1,24 +1,28 @@
-import type { FormInstance } from 'antd';
-import React, { useRef, useState, useEffect } from 'react';
-import moment from 'moment';
-import { Providers } from '@/helpers/providers/Providers';
-import { NetworkId } from '@/constants/networks';
-import { SafeMint__factory } from '@/typechain/factories/SafeMint__factory';
-import { TokenERC20__factory } from '@/typechain/factories/TokenERC20__factory';
-import { Card, message, Result, Form, Input, Button, Descriptions, Divider, Alert, Statistic, Row, Col } from 'antd';
-import ImageUploader from '@/components/RightContent/ImageUploader'
-import { ProForm, ProFormSelect, ProFormText, StepsForm, ProFormDependency, ProFormTextArea, ProFormSwitch, ProFormGroup, ProFormList, ProFormDateTimePicker } from '@ant-design/pro-form';
-import type { StepDataType } from './data'
-import styles from './submit.less';
-import { ethers } from 'ethers'
-import { TwitterSquareFilled } from '@ant-design/icons';
+import ImageCommon from '@/assets/common';
 import ReactPreview from '@/components/ReactPreview';
-import ImageCommon from "@/assets/common";
-import { useModel, request } from 'umi';
-import type { ProjectInfo } from "@/helpers/types";
+import ImageUploader from '@/components/RightContent/ImageUploader';
+import type { ProjectInfo } from '@/helpers/types';
+import { SafeMint__factory } from '@/typechain/factories/SafeMint__factory';
+import { uploadProjectMetadata } from '@/utils/ipfs';
 import {
-  uploadProjectMetadata,
-} from '@/utils/ipfs'
+  ProFormDateTimePicker,
+  ProFormDependency,
+  ProFormGroup,
+  ProFormList,
+  ProFormSelect,
+  ProFormSwitch,
+  ProFormText,
+  ProFormTextArea,
+  StepsForm,
+} from '@ant-design/pro-form';
+import type { FormInstance } from 'antd';
+import { Button, Card, Col, Descriptions, Form, Input, message, Row, Statistic } from 'antd';
+import { ethers } from 'ethers';
+import moment from 'moment';
+import React, { useEffect, useRef, useState } from 'react';
+import { request, useModel } from 'umi';
+import type { StepDataType } from './data';
+import styles from './submit.less';
 
 export type ProjectInfoFormFields = {
   name: string;
@@ -63,11 +67,9 @@ const StepDescriptions: React.FC<{
 
 const submit: React.FC = () => {
   const storageData = localStorage.getItem('safe-mint-dao');
-  const { connection } = useModel('useWeb3Model', model => (
-    {
-      connection: model.connection
-    }
-  ))
+  const { connection } = useModel('useWeb3Model', (model) => ({
+    connection: model.connection,
+  }));
   //const ABIFunctionArray: any[] = []
   const [ABIarry, setABIarry] = useState([]);
   const [getIpfsHash, setIpfsHash] = useState('');
@@ -77,32 +79,32 @@ const submit: React.FC = () => {
     storageData
       ? JSON.parse(storageData)
       : {
-        logol: '',
-        banner: '',
-        name: '',
-        description: '',
-        chain: '',
-        address: '0xAcc15dC74880C9944775448304B263D191c6077F',
-        website: '',
-        twitter: '',
-        discord: '',
-        telegram: '',
-        supply: '',
-        peraddress: '',
-        time: moment().format('YYYY-MM-DD HH:mm:ss'),
-        refundable: false,
-        functions: [
-          {
-            name: '',
-            free: false,
-            price: '',
-            param: '',
-            description: '',
-            whitelister: false,
-          },
-        ],
-        current: 0,
-      },
+          logol: '',
+          banner: '',
+          name: '',
+          description: '',
+          chain: '',
+          address: '0xAcc15dC74880C9944775448304B263D191c6077F',
+          website: '',
+          twitter: '',
+          discord: '',
+          telegram: '',
+          supply: '',
+          peraddress: '',
+          time: moment().format('YYYY-MM-DD HH:mm:ss'),
+          refundable: false,
+          functions: [
+            {
+              name: '',
+              free: false,
+              price: '',
+              param: '',
+              description: '',
+              whitelister: false,
+            },
+          ],
+          current: 0,
+        },
   );
 
   const currentChange = async (cur: React.SetStateAction<number>) => {
@@ -113,7 +115,7 @@ const submit: React.FC = () => {
       );
       if (data.message !== 'OK') {
         message.error('调用合约失败，请检查合约地址');
-        setLoading(false)
+        setLoading(false);
         return false;
       }
       message.success('合约获取成功');
@@ -132,14 +134,14 @@ const submit: React.FC = () => {
     }
     if (cur == 2) {
       setLoading(true);
-      const { IpfsHash } = await uploadProjectMetadata(stepData)
+      const { IpfsHash } = await uploadProjectMetadata(stepData);
       if (!IpfsHash) {
         message.error('上传失败');
-        setLoading(false)
+        setLoading(false);
         return false;
       }
-      setIpfsHash(IpfsHash)
-      setLoading(false)
+      setIpfsHash(IpfsHash);
+      setLoading(false);
     }
     setCurrent(cur);
     setStepData((obj) => {
@@ -148,32 +150,41 @@ const submit: React.FC = () => {
   };
   const upIpfs = async () => {
     if (getIpfsHash) {
-      const contract = new ethers.Contract('0x3b68C1Cd8DD6C40aFFf144EA7094a7097FbBEdca', SafeMint__factory.abi, connection.signer)
+      const contract = new ethers.Contract(
+        '0x3b68C1Cd8DD6C40aFFf144EA7094a7097FbBEdca',
+        SafeMint__factory.abi,
+        connection.signer,
+      );
       try {
-        const data = await contract.saveProject(stepData.name, stepData.address, 0, 20, getIpfsHash)
+        const data = await contract.saveProject(
+          stepData.name,
+          stepData.address,
+          0,
+          20,
+          getIpfsHash,
+        );
         message.success('上传成功');
         // 清空
-        localStorage.setItem('safe-mint-dao', '')
-
+        localStorage.setItem('safe-mint-dao', '');
       } catch (err) {
-        console.log("Error: ", err)
+        console.log('Error: ', err);
       }
     }
   };
   useEffect(() => {
     if (stepData.current == 1) {
-      currentChange(1)
+      currentChange(1);
     }
-  }, [stepData.current])
+  }, [stepData.current]);
   useEffect(() => {
-    const listener = (ev: { preventDefault: () => void; }) => {
+    const listener = (ev: { preventDefault: () => void }) => {
       ev.preventDefault();
       localStorage.setItem('safe-mint-dao', JSON.stringify(stepData));
     };
     window.addEventListener('beforeunload', listener);
     return () => {
-      window.removeEventListener('beforeunload', listener)
-    }
+      window.removeEventListener('beforeunload', listener);
+    };
   }, [stepData]);
   const [current, setCurrent] = useState(stepData.current);
   const formRef = useRef<FormInstance>();
@@ -210,9 +221,7 @@ const submit: React.FC = () => {
               );
             }
             if (props.step === 2) {
-              return (
-                <Button></Button>
-              );
+              return <Button></Button>;
             }
             return dom;
           },
@@ -301,20 +310,56 @@ const submit: React.FC = () => {
             />
             <Form.Item label="Account Info">
               <Row align="middle" style={{ margin: '8px 0' }}>
-                <Col span={2}><img src={ImageCommon.website} style={{ width: "23px" }} /></Col>
-                <Col span={8}><Input onBlur={(e) => handleInputBlur({ 'website': e.target.value })} placeholder="website" name="website" size="small" /></Col>
+                <Col span={2}>
+                  <img src={ImageCommon.website} style={{ width: '23px' }} />
+                </Col>
+                <Col span={8}>
+                  <Input
+                    onBlur={(e) => handleInputBlur({ website: e.target.value })}
+                    placeholder="website"
+                    name="website"
+                    size="small"
+                  />
+                </Col>
               </Row>
               <Row align="middle" style={{ margin: '17px 0' }}>
-                <Col span={2}><img src={ImageCommon.twitter} style={{ width: "23px" }} /></Col>
-                <Col span={8}><Input placeholder="Twitter handler" onBlur={(e) => handleInputBlur({ 'twitter': e.target.value })} name="twitter" size="small" /></Col>
+                <Col span={2}>
+                  <img src={ImageCommon.twitter} style={{ width: '23px' }} />
+                </Col>
+                <Col span={8}>
+                  <Input
+                    placeholder="Twitter handler"
+                    onBlur={(e) => handleInputBlur({ twitter: e.target.value })}
+                    name="twitter"
+                    size="small"
+                  />
+                </Col>
               </Row>
               <Row align="middle" style={{ margin: '17px 0' }}>
-                <Col span={2}><img src={ImageCommon.discord} style={{ width: "23px" }} /></Col>
-                <Col span={8}><Input placeholder="Discord username" onBlur={(e) => handleInputBlur({ 'discord': e.target.value })} name="discord" size="small" /></Col>
+                <Col span={2}>
+                  <img src={ImageCommon.discord} style={{ width: '23px' }} />
+                </Col>
+                <Col span={8}>
+                  <Input
+                    placeholder="Discord username"
+                    onBlur={(e) => handleInputBlur({ discord: e.target.value })}
+                    name="discord"
+                    size="small"
+                  />
+                </Col>
               </Row>
               <Row align="middle" style={{ margin: '17px 0' }}>
-                <Col span={2}><img src={ImageCommon.telegram} style={{ width: "23px" }} /></Col>
-                <Col span={8}><Input placeholder="Telegram handler" onBlur={(e) => handleInputBlur({ 'telegram': e.target.value })} name="telegram" size="small" /></Col>
+                <Col span={2}>
+                  <img src={ImageCommon.telegram} style={{ width: '23px' }} />
+                </Col>
+                <Col span={8}>
+                  <Input
+                    placeholder="Telegram handler"
+                    onBlur={(e) => handleInputBlur({ telegram: e.target.value })}
+                    name="telegram"
+                    size="small"
+                  />
+                </Col>
               </Row>
             </Form.Item>
             <ProFormText
@@ -353,7 +398,8 @@ const submit: React.FC = () => {
               label="Start Time"
               fieldProps={{
                 format: (value) => value.format('YYYY-MM-DD HH:mm:ss'),
-                onChange: (value) => handleInputBlur({ time: value }),
+                onChange: (value) =>
+                  handleInputBlur({ time: value?.format('YYYY-MM-DD HH:mm:ss') }),
               }}
             />
           </div>
@@ -361,80 +407,121 @@ const submit: React.FC = () => {
 
         <StepsForm.StepForm title="Mint Function" layout={LAYOUT_TYPE_HORIZONTAL}>
           <div className={styles.submit2}>
-            <ProFormList name="users" initialValue={stepData.functions} itemRender={({ listDom }, { index }) => (
-              <Form.Item label={`function${index + 1}`}>
-                {/* {listDom} */}
-                <ProFormGroup>
-                  <div className={styles.submitOne}>
-                    <div className={styles.submitTitle}>Function Name</div>
-                    {/* <input name="name" /> */}
-                    <ProFormSelect
-                      name="name"
-                      placeholder="Name"
-                      options={ABIarry}
-                      fieldProps={{ onChange: (value, params) => handleFunctionChange(index, 'name', value, params?.params) }} />
-                  </div>
-                </ProFormGroup>
-                <ProFormGroup>
-                  <div>
-                    <div className={styles.submitTitle}>Free Mint?</div>
-                    {/* <input name="name" /> */}
-                    <ProFormSwitch name="free" fieldProps={{ onChange: (value) => handleFunctionBlue(index, 'free', value) }} />
-                  </div>
-                  <div>
-                    <div className={styles.submitTitle}>Mint Price</div>
-                    {/* <input name="name" /> */}
-                    <ProFormDependency name={['free']}>
-                      {({ free }) => {
-                        return <ProFormText disabled={!free} width={100} fieldProps={{
-                          onBlur: (e) => {
-                            handleFunctionBlue(index, 'price', e.target.value)
-                          },
-                        }} name="price" placeholder="Input Price" />
+            <ProFormList
+              name="users"
+              initialValue={stepData.functions}
+              itemRender={({ listDom }, { index }) => (
+                <Form.Item label={`function${index + 1}`}>
+                  {/* {listDom} */}
+                  <ProFormGroup>
+                    <div className={styles.submitOne}>
+                      <div className={styles.submitTitle}>Function Name</div>
+                      {/* <input name="name" /> */}
+                      <ProFormSelect
+                        name="name"
+                        placeholder="Name"
+                        options={ABIarry}
+                        fieldProps={{
+                          onChange: (value, params) =>
+                            handleFunctionChange(index, 'name', value, params?.params),
+                        }}
+                      />
+                    </div>
+                  </ProFormGroup>
+                  <ProFormGroup>
+                    <div>
+                      <div className={styles.submitTitle}>Free Mint?</div>
+                      {/* <input name="name" /> */}
+                      <ProFormSwitch
+                        name="free"
+                        fieldProps={{
+                          onChange: (value) => handleFunctionBlue(index, 'free', value),
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <div className={styles.submitTitle}>Mint Price</div>
+                      {/* <input name="name" /> */}
+                      <ProFormDependency name={['free']}>
+                        {({ free }) => {
+                          return (
+                            <ProFormText
+                              disabled={!free}
+                              width={100}
+                              fieldProps={{
+                                onBlur: (e) => {
+                                  handleFunctionBlue(index, 'price', e.target.value);
+                                },
+                              }}
+                              name="price"
+                              placeholder="Input Price"
+                            />
+                          );
+                        }}
+                      </ProFormDependency>
+                      {/* <ProFormText width={100} name="price" placeholder="Input Price" /> */}
+                    </div>
+                    <div>
+                      <div className={styles.submitTitle}>For Mint Quantity</div>
+                      {/* <input name="name" /> */}
+                      <ProFormSelect
+                        width={110}
+                        name="param"
+                        options={paramsArray}
+                        fieldProps={{
+                          onChange: (value) => handleFunctionBlue(index, 'param', value),
+                        }}
+                        placeholder="Param Name"
+                      />
+                    </div>
+                  </ProFormGroup>
+                  <div className={styles.submitDescription}>
+                    <ProFormTextArea
+                      name="description"
+                      fieldProps={{
+                        onBlur: (e) => {
+                          handleFunctionBlue(index, 'description', e.target.value);
+                        },
                       }}
-                    </ProFormDependency>
-                    {/* <ProFormText width={100} name="price" placeholder="Input Price" /> */}
+                      label="Function Description"
+                    />
                   </div>
                   <div>
-                    <div className={styles.submitTitle}>For Mint Quantity</div>
+                    <div className={styles.submitTitle}>Restrict only for whitelister?</div>
                     {/* <input name="name" /> */}
-                    <ProFormSelect width={110} name="param" options={paramsArray} fieldProps={{ onChange: (value) => handleFunctionBlue(index, 'param', value) }} placeholder="Param Name" />
+                    <ProFormSwitch
+                      fieldProps={{
+                        onChange: (value) => handleFunctionBlue(index, 'whitelister', value),
+                      }}
+                      name="whitelister"
+                    />
                   </div>
-                </ProFormGroup>
-                <div className={styles.submitDescription} >
-                  <ProFormTextArea name="description" fieldProps={{
-                    onBlur: (e) => {
-                      handleFunctionBlue(index, 'description', e.target.value)
-                    },
-                  }} label="Function Description" />
-                </div>
-                <div>
-                  <div className={styles.submitTitle}>Restrict only for whitelister?</div>
-                  {/* <input name="name" /> */}
-                  <ProFormSwitch fieldProps={{ onChange: (value) => handleFunctionBlue(index, 'whitelister', value) }} name="whitelister" />
-                </div>
-              </Form.Item>
-            )} creatorButtonProps={{
-              creatorButtonText: 'Add More Functions',
-            }} actionGuard={{
-              beforeAddRow: async (defaultValue, insertIndex) => {
-                return new Promise((resolve) => {
-                  stepData.functions = [...stepData.functions, {
-                    name: '',
-                    free: false,
-                    price: '',
-                    param: '',
-                    description: '',
-                    whitelister: false
-                  }]
-                  setTimeout(() => resolve(true), 1000);
-                });
-              }
-            }} />
+                </Form.Item>
+              )}
+              creatorButtonProps={{
+                creatorButtonText: 'Add More Functions',
+              }}
+              actionGuard={{
+                beforeAddRow: async (defaultValue, insertIndex) => {
+                  return new Promise((resolve) => {
+                    stepData.functions = [
+                      ...stepData.functions,
+                      {
+                        name: '',
+                        free: false,
+                        price: '',
+                        param: '',
+                        description: '',
+                        whitelister: false,
+                      },
+                    ];
+                    setTimeout(() => resolve(true), 1000);
+                  });
+                },
+              }}
+            />
           </div>
-          <div>
-
-          </div>
+          <div></div>
         </StepsForm.StepForm>
         <div className={styles.stepUp3}></div>
         <StepsForm.StepForm title="Check & Submit"></StepsForm.StepForm>
@@ -445,17 +532,20 @@ const submit: React.FC = () => {
         <ReactPreview isComponent={true} data={stepData} />
         {current === 2 && (
           <div className={styles.stepUp3div}>
-            <Button onClick={() => setCurrent(1)}>
-              save
-            </Button>
-            <Button type="primary" className={styles.stepUp3button} loading={loading} onClick={upIpfs}>
+            <Button onClick={() => setCurrent(1)}>save</Button>
+            <Button
+              type="primary"
+              className={styles.stepUp3button}
+              loading={loading}
+              onClick={upIpfs}
+            >
               Check & Submit
             </Button>
           </div>
         )}
       </div>
       {/* <Divider style={{ margin: '40px 0 24px' }} /> */}
-    </Card >
+    </Card>
   );
 };
 

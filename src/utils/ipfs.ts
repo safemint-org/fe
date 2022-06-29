@@ -6,6 +6,7 @@ import axios from 'axios';
 
 import { IPFS_GATEWAY_HOSTNAME } from '@/constants/ipfs';
 import { readNetwork } from '@/constants/networks';
+import { ProjectInfo } from '@/helpers/types';
 
 const pinata_api_key = '9ecb30311e0fafe19531';
 const pinata_secret_api_key = '4877f1294f61a6840f073ff4e46d9b51843629b30edde78397a8a594b259c5c7';
@@ -119,3 +120,9 @@ export const getPinnedListByTag = (tag: keyof typeof IPFS_TAGS) =>
       },
     },
   });
+
+export const getProjectMetadata = (cid: string) => {
+  const url = ipfsCidUrl(cid);
+  console.log(url);
+  return axios.get(url).then((res) => res.data as ProjectInfo);
+};
