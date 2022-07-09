@@ -6,7 +6,7 @@ export default function SelectIcon(props) {
   const className = styles.SelectIcon;
   const selectName = [{
     key: 'en-US',
-    value: 'ENG'
+    value: 'EN'
   },
   { key: 'zh-CN', value: 'CN' }]
 

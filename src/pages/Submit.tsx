@@ -23,6 +23,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { request, useModel } from 'umi';
 import type { StepDataType } from './data';
 import styles from './submit.less';
+import { useHistory } from 'react-router-dom'
 
 export type ProjectInfoFormFields = {
   name: string;
@@ -75,44 +76,70 @@ const submit: React.FC = () => {
   const [getIpfsHash, setIpfsHash] = useState('');
   const [loading, setLoading] = useState(false);
   const [paramsArray, setparamsArray] = useState([]);
+  const TESTNET_API_URL_MAP = {
+    Ethereum: 'https://api-rinkeby.etherscan.io',
+    Moonbeam: 'https://api-moonbeam.moonscan.io',
+  };
+
+  const history = useHistory()
   const [stepData, setStepData] = useState<ProjectInfo>(
     storageData
       ? JSON.parse(storageData)
       : {
-          logol: '',
-          banner: '',
-          name: '',
-          description: '',
-          chain: '',
-          address: '0xAcc15dC74880C9944775448304B263D191c6077F',
-          website: '',
-          twitter: '',
-          discord: '',
-          telegram: '',
-          supply: '',
-          peraddress: '',
-          time: moment().format('YYYY-MM-DD HH:mm:ss'),
-          refundable: false,
-          functions: [
-            {
-              name: '',
-              free: false,
-              price: '',
-              param: '',
-              description: '',
-              whitelister: false,
-            },
-          ],
-          current: 0,
-        },
+        logol: '',
+        banner: '',
+        name: '',
+        description: '',
+        chain: '',
+        address: '',
+        website: '',
+        twitter: '',
+        discord: '',
+        telegram: '',
+        supply: '',
+        peraddress: '',
+        time: moment().format('YYYY-MM-DD HH:mm:ss'),
+        refundable: false,
+        functions: [{
+          "name": "",
+          "free": false,
+          "price": "",
+          "param": "",
+          "description": "",
+          "whitelister": false
+        }],
+        current: 0,
+      },
   );
 
+  const getABI = async () => {
+    const url = TESTNET_API_URL_MAP[stepData.chain]
+    return await request(
+      `${url}/api?module=contract&action=getabi&address=${stepData.address}&tag=latest&apikey=VXZEU1KW4YIXY8ZHQZG4QJTPK3CH7M6B3X`,
+    );
+  }
+  const clearFunctions = () => {
+    // setStepData((obj) => {
+    //   return {
+    //     ...obj, functions: [{
+    //       "name": "",
+    //       "free": false,
+    //       "price": "",
+    //       "param": "",
+    //       "description": "",
+    //       "whitelister": false
+    //     }]
+    //   };
+    // });
+    setCurrent(0);
+  }
   const currentChange = async (cur: React.SetStateAction<number>) => {
     if (cur == 1) {
       setLoading(true);
-      const data = await request(
-        `https://api-moonbeam.moonscan.io/api?module=contract&action=getabi&address=${stepData.address}&apikey=YourApiKeyToken`,
-      );
+      // const data = await request(
+      //   `https://api-moonbeam.moonscan.io/api?module=contract&action=getabi&address=${stepData.address}&apikey=YourApiKeyToken`,
+      // );
+      const data = await getABI()
       if (data.message !== 'OK') {
         message.error('调用合约失败，请检查合约地址');
         setLoading(false);
@@ -147,8 +174,13 @@ const submit: React.FC = () => {
     setStepData((obj) => {
       return { ...obj, current: cur };
     });
+    // if(StepData.functions.length == 0){
+
+    // }
   };
   const upIpfs = async () => {
+    // localStorage.setItem('safe-mint-dao', '');
+    // history.push({ pathname: '/home' })
     if (getIpfsHash) {
       const contract = new ethers.Contract(
         '0x3b68C1Cd8DD6C40aFFf144EA7094a7097FbBEdca',
@@ -166,6 +198,7 @@ const submit: React.FC = () => {
         message.success('上传成功');
         // 清空
         localStorage.setItem('safe-mint-dao', '');
+        history.push({ pathname: '/home' })
       } catch (err) {
         console.log('Error: ', err);
       }
@@ -218,6 +251,21 @@ const submit: React.FC = () => {
                 <Button type="primary" loading={loading} onClick={() => props.onSubmit?.()}>
                   NEXT: File Function
                 </Button>
+              );
+            }
+            if (props.step === 1) {
+              return (
+                <div className={styles.stepUp2div}>
+                  <Button onClick={clearFunctions}>save</Button>
+                  <Button
+                    type="primary"
+                    className={styles.stepUp3button}
+                    loading={loading}
+                    onClick={() => setCurrent(2)}
+                  >
+                    Next
+                  </Button>
+                </div>
               );
             }
             if (props.step === 2) {
@@ -281,6 +329,10 @@ const submit: React.FC = () => {
             />
             <ProFormSelect
               options={[
+                {
+                  value: 'Ethereum',
+                  label: 'Ethereum'
+                },
                 {
                   value: 'Moonbeam',
                   label: 'Moonbeam',
@@ -528,7 +580,7 @@ const submit: React.FC = () => {
       </StepsForm>
       <div className={styles.stepHeight}></div>
       <div className={current === 2 ? styles.submitReactPreviewLast : styles.submitReactPreview}>
-        <div className={styles.Previewtext}>Preview</div>
+        {current != 2 && (<div className={styles.Previewtext}>Preview</div>)}
         <ReactPreview isComponent={true} data={stepData} />
         {current === 2 && (
           <div className={styles.stepUp3div}>

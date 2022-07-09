@@ -190,9 +190,9 @@ const GlobalHeaderRight: React.FC = () => {
             <div className={`${styles.name} anticon`}>{ellipseAddress(connection.address)}</div>
           </span>
         </HeaderDropdown>))}
-
       {!connection.address && (<Button onClick={onLoade}> Connect </Button>)}
-      <SelectLang onItemClick={itemClick} icon={<SelectIcon iconName='zh-CN' />} />
+      {/* <SelectLang onItemClick={itemClick} icon={<SelectIcon iconName='zh-CN' />} /> */}
+      <SelectLang icon={<SelectIcon iconName={getLocale()} />} />
     </Space>
   );
 };

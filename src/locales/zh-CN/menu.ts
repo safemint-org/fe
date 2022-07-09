@@ -2,7 +2,7 @@ export default {
   'menu.home': '首页',
   'menu.submit': '提交',
   'menu.explore': '浏览',
-
+  'menu.verify': '审核',
   'menu.more-blocks': '更多区块',
   'menu.admin': '管理页',
   'menu.admin.sub-page': '二级管理页',

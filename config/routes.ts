@@ -10,6 +10,11 @@
     component: './submit',
   },
   {
+    path: '/verify',
+    name: 'verify',
+    component: './Verify',
+  },
+  {
     path: '/explore',
     name: 'explore',
     component: './Explore',
