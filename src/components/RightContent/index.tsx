@@ -94,7 +94,6 @@ const GlobalHeaderRight: React.FC = () => {
   }
 
   const getNetwork = (id) => NETWORKS[id].name
-  console.log('id', getNetwork(connection.chainId))
   const web3Modal = new Web3Modal({
     network: getNetwork(connection.chainId),
     cacheProvider: true,
@@ -192,7 +191,7 @@ const GlobalHeaderRight: React.FC = () => {
         </HeaderDropdown>))}
       {!connection.address && (<Button onClick={onLoade}> Connect </Button>)}
       {/* <SelectLang onItemClick={itemClick} icon={<SelectIcon iconName='zh-CN' />} /> */}
-      <SelectLang icon={<SelectIcon iconName={getLocale()} />} />
+      <SelectLang icon={<SelectIcon iconName={getLocale() ?? 'zh-CN'} />} />
     </Space>
   );
 };

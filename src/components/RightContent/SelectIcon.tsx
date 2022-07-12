@@ -8,13 +8,15 @@ export default function SelectIcon(props) {
     key: 'en-US',
     value: 'EN'
   },
-  { key: 'zh-CN', value: 'CN' }]
+  { key: 'zh-CN', value: 'CN' },
+  { key: 'zh-TW', value: 'CN' }]
 
   const inlineStyle = {
     fontSize: 14
   };
 
   const obj = selectName.filter((item) => item.key === iconName)[0]
+  console.log('iconName', iconName)
   return (
     <div style={inlineStyle}>
       <CaretDownOutlined />

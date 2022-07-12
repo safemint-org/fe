@@ -1,9 +1,15 @@
 import ImageCommon from '@/assets/common';
 import ReactPreview from '@/components/ReactPreview';
 import ImageUploader from '@/components/RightContent/ImageUploader';
+import ConnectButton from "@/components/ConnectButton";
 import type { ProjectInfo } from '@/helpers/types';
 import { SafeMint__factory } from '@/typechain/factories/SafeMint__factory';
 import { uploadProjectMetadata } from '@/utils/ipfs';
+import Web3Modal from "web3modal";
+import WalletConnectProvider from '@walletconnect/web3-provider';
+import Fortmatic from "fortmatic";
+import CoinbaseWalletSDK from '@coinbase/wallet-sdk';
+import { NETWORKS } from "@/constants/networks"
 import {
   ProFormDateTimePicker,
   ProFormDependency,
@@ -68,8 +74,9 @@ const StepDescriptions: React.FC<{
 
 const submit: React.FC = () => {
   const storageData = localStorage.getItem('safe-mint-dao');
-  const { connection } = useModel('useWeb3Model', (model) => ({
+  const { connection, setconnection } = useModel('useWeb3Model', (model) => ({
     connection: model.connection,
+    setconnection: model.setconnection
   }));
   //const ABIFunctionArray: any[] = []
   const [ABIarry, setABIarry] = useState([]);
@@ -80,6 +87,67 @@ const submit: React.FC = () => {
     Ethereum: 'https://api-rinkeby.etherscan.io',
     Moonbeam: 'https://api-moonbeam.moonscan.io',
   };
+  // Example for Polygon/Matic:
+  const customNetworkOptions = {
+    rpcUrl: 'https://rpc-mainnet.maticvigil.com',
+    chainId: 137
+  }
+  const getProviderOptions = () => {
+    return {
+      /* See Provider Options Section */
+      walletconnect: {
+        display: {
+          name: "WalletConnect"
+        },
+        package: WalletConnectProvider,
+        options: {
+          infuraId: "INFURA_ID" // required
+        }
+      },
+      fortmatic: {
+        package: Fortmatic, // required
+        options: {
+          key: "FORTMATIC_KEY", // required
+          network: customNetworkOptions // if we don't pass it, it will default to localhost:8454
+        }
+      },
+      coinbasewallet: {
+        package: CoinbaseWalletSDK, // Required
+        options: {
+          appName: "My Awesome App", // Required
+          infuraId: "INFURA_ID", // Required
+          rpc: "", // Optional if `infuraId` is provided; otherwise it's required
+          chainId: 1, // Optional. It defaults to 1 if not provided
+          darkMode: false // Optional. Use dark theme, defaults to false
+        }
+      },
+    };
+  }
+  const onLoade = async () => {
+
+    const getNetwork = (id) => NETWORKS[id].name
+    const web3Modal = new Web3Modal({
+      network: getNetwork(connection.chainId),
+      cacheProvider: true,
+      providerOptions: getProviderOptions()
+    });
+
+    const instance = web3Modal.connect()
+    const provider = new ethers.providers.Web3Provider(await instance);
+    // MetaMask 需要请求权限才能连接用户帐户
+    await provider.send("eth_requestAccounts", []);
+    const signer = provider.getSigner();
+    const accounts = await provider.listAccounts();
+    const { chainId } = await provider.getNetwork();
+    const address = accounts[0];
+    await setconnection({
+      instance,
+      connected: true,
+      address,
+      chainId,
+      signer
+    });
+  }
 
   const history = useHistory()
   const [stepData, setStepData] = useState<ProjectInfo>(
@@ -106,7 +174,8 @@ const submit: React.FC = () => {
           "price": "",
           "param": "",
           "description": "",
-          "whitelister": false
+          "whitelister": false,
+          "paramsArray": [],
         }],
         current: 0,
       },
@@ -118,20 +187,11 @@ const submit: React.FC = () => {
       `${url}/api?module=contract&action=getabi&address=${stepData.address}&tag=latest&apikey=VXZEU1KW4YIXY8ZHQZG4QJTPK3CH7M6B3X`,
     );
   }
-  const clearFunctions = () => {
-    // setStepData((obj) => {
-    //   return {
-    //     ...obj, functions: [{
-    //       "name": "",
-    //       "free": false,
-    //       "price": "",
-    //       "param": "",
-    //       "description": "",
-    //       "whitelister": false
-    //     }]
-    //   };
-    // });
-    setCurrent(0);
+  const saveCurrent = (cur) => {
+    setCurrent(cur);
+    setStepData((obj) => {
+      return { ...obj, current: cur };
+    });
   }
   const currentChange = async (cur: React.SetStateAction<number>) => {
     if (cur == 1) {
@@ -152,7 +212,9 @@ const submit: React.FC = () => {
         if (abi[i].type == 'function' && abi[i].stateMutability.includes('payable')) {
           const func = abi[i];
           const paramsArray = [];
-          for (const j in func.inputs) paramsArray.push(func.inputs[j].name);
+          for (const j in func.inputs) {
+            func.inputs[j].internalType.includes('int') && paramsArray.push(func.inputs[j].name);
+          }
           array.push({ label: func.name, value: func.name, params: paramsArray });
         }
       }
@@ -161,6 +223,7 @@ const submit: React.FC = () => {
     }
     if (cur == 2) {
       setLoading(true);
+      console.log('hhhhhhh')
       const { IpfsHash } = await uploadProjectMetadata(stepData);
       if (!IpfsHash) {
         message.error('上传失败');
@@ -179,8 +242,7 @@ const submit: React.FC = () => {
     // }
   };
   const upIpfs = async () => {
-    // localStorage.setItem('safe-mint-dao', '');
-    // history.push({ pathname: '/home' })
+
     if (getIpfsHash) {
       const contract = new ethers.Contract(
         '0x3b68C1Cd8DD6C40aFFf144EA7094a7097FbBEdca',
@@ -226,378 +288,399 @@ const submit: React.FC = () => {
     labelCol: { span: 10 },
   };
   const handleInputBlur = (map: any) => {
+    console.log('map', map)
     setStepData((obj) => {
       return { ...obj, ...map, current: current };
     });
   };
 
   const handleFunctionChange = (index: any, key: any, value: any, ary: any) => {
-    setparamsArray(ary);
-    stepData.functions[index][key] = value;
+    //setparamsArray(ary);
+    let functionArray = stepData.functions
+    console.log('functionArray', functionArray)
+    functionArray[index]['paramsArray'] = ary;
+    functionArray[index][key] = value;
+    functionArray[index]['param'] = "";
+    setStepData((obj) => {
+      return { ...obj, functions: functionArray };
+    });
+    console.log('stepData.functions', stepData.functions[index])
   };
 
   const handleFunctionBlue = (index: any, key: any, value: any) => {
-    stepData.functions[index][key] = value;
+    let functionArray = stepData.functions
+    functionArray[index][key] = value;
+    setStepData((obj) => {
+      return { ...obj, functions: functionArray };
+    });
+    console.log('stepData.functions', stepData.functions[index])
   };
   return (
-    <Card bordered={false}>
-      <StepsForm
-        current={current}
-        onCurrentChange={currentChange}
-        submitter={{
-          render: (props, dom) => {
-            if (props.step === 0) {
-              return (
-                <Button type="primary" loading={loading} onClick={() => props.onSubmit?.()}>
-                  NEXT: File Function
-                </Button>
-              );
-            }
-            if (props.step === 1) {
-              return (
-                <div className={styles.stepUp2div}>
-                  <Button onClick={clearFunctions}>save</Button>
-                  <Button
-                    type="primary"
-                    className={styles.stepUp3button}
-                    loading={loading}
-                    onClick={() => setCurrent(2)}
-                  >
-                    Next
+    connection.connected ? (
+      <Card bordered={false} >
+        <StepsForm
+          current={current}
+          onCurrentChange={currentChange}
+          submitter={{
+            render: (props, dom) => {
+              if (props.step === 0) {
+                return (
+                  <Button type="primary" loading={loading} onClick={() => props.onSubmit?.()}>
+                    NEXT: File Function
                   </Button>
-                </div>
-              );
-            }
-            if (props.step === 2) {
-              return <Button></Button>;
-            }
-            return dom;
-          },
-        }}
-      >
-        <StepsForm.StepForm<StepDataType>
-          formRef={formRef}
-          title="Project Info"
-          layout={LAYOUT_TYPE_HORIZONTAL}
-          {...formItemLayout}
-          initialValues={stepData}
+                );
+              }
+              if (props.step === 1) {
+                return (
+                  <div className={styles.stepUp2div}>
+                    <Button onClick={() => saveCurrent(0)}>save</Button>
+                    <Button
+                      type="primary"
+                      className={styles.stepUp3button}
+                      loading={loading}
+                      onClick={() => props.onSubmit?.()}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                );
+              }
+              if (props.step === 2) {
+                return <Button></Button>;
+              }
+              return dom;
+            },
+          }}
         >
-          <div className={styles.submit1}>
-            <Form.Item label="Logo">
-              <ImageUploader
-                title="Upload"
-                initialUrl={stepData.logol}
-                onSuccess={(url) => {
-                  handleInputBlur({ logol: url });
+          <StepsForm.StepForm<StepDataType>
+            formRef={formRef}
+            title="Project Info"
+            layout={LAYOUT_TYPE_HORIZONTAL}
+            {...formItemLayout}
+            initialValues={stepData}
+          >
+            <div className={styles.submit1}>
+              <Form.Item label="Logo">
+                <ImageUploader
+                  title="Upload"
+                  initialUrl={stepData.logol}
+                  onSuccess={(url) => {
+                    handleInputBlur({ logol: url });
+                  }}
+                />
+              </Form.Item>
+
+              <Form.Item label="Project Banner">
+                <ImageUploader
+                  title="Upload Banner"
+                  initialUrl={stepData.banner}
+                  onSuccess={(url) => {
+                    handleInputBlur({ banner: url });
+                  }}
+                />
+              </Form.Item>
+
+              {/* <Upload /> */}
+              <ProFormText
+                colProps={{ md: 12, xl: 8 }}
+                label="Project Name"
+                width="md"
+                name="name"
+                fieldProps={{
+                  onBlur: (e) => {
+                    handleInputBlur({ name: e.target.value });
+                  },
+                }}
+                rules={[{ required: true, message: '' }]}
+              />
+
+              <ProFormTextArea
+                label="Project Description"
+                width="md"
+                name="description"
+                fieldProps={{
+                  onBlur: (e) => {
+                    handleInputBlur({ description: e.target.value });
+                  },
                 }}
               />
-            </Form.Item>
-
-            <Form.Item label="Project Banner">
-              <ImageUploader
-                title="Upload Banner"
-                initialUrl={stepData.banner}
-                onSuccess={(url) => {
-                  handleInputBlur({ banner: url });
+              <ProFormSelect
+                options={[
+                  {
+                    value: 'Ethereum',
+                    label: 'Ethereum'
+                  },
+                  {
+                    value: 'Moonbeam',
+                    label: 'Moonbeam',
+                  },
+                ]}
+                rules={[{ required: true, message: '' }]}
+                fieldProps={{
+                  onChange: (e) => {
+                    handleInputBlur({ chain: e });
+                  },
+                }}
+                width="md"
+                name="chain"
+                placeholder="please select chain"
+                label="Operating Chain"
+              />
+              <ProFormText
+                label="Contract Address"
+                rules={[{ required: true, message: '' }]}
+                name="address"
+                fieldProps={{
+                  onBlur: (e) => {
+                    handleInputBlur({ address: e.target.value });
+                  },
+                }}
+                width="md"
+              />
+              <Form.Item label="Account Info">
+                <Row align="middle" style={{ margin: '8px 0' }}>
+                  <Col span={2}>
+                    <img src={ImageCommon.website} style={{ width: '23px' }} />
+                  </Col>
+                  <Col span={8}>
+                    <Input
+                      onBlur={(e) => handleInputBlur({ website: e.target.value })}
+                      placeholder="website"
+                      defaultValue={stepData.website}
+                      size="small"
+                    />
+                  </Col>
+                </Row>
+                <Row align="middle" style={{ margin: '17px 0' }}>
+                  <Col span={2}>
+                    <img src={ImageCommon.twitter} style={{ width: '23px' }} />
+                  </Col>
+                  <Col span={8}>
+                    <Input
+                      placeholder="Twitter handler"
+                      onBlur={(e) => handleInputBlur({ twitter: e.target.value })}
+                      defaultValue={stepData.twitter}
+                      size="small"
+                    />
+                  </Col>
+                </Row>
+                <Row align="middle" style={{ margin: '17px 0' }}>
+                  <Col span={2}>
+                    <img src={ImageCommon.discord} style={{ width: '23px' }} />
+                  </Col>
+                  <Col span={8}>
+                    <Input
+                      placeholder="Discord username"
+                      onBlur={(e) => handleInputBlur({ discord: e.target.value })}
+                      defaultValue={stepData.discord}
+                      size="small"
+                    />
+                  </Col>
+                </Row>
+                <Row align="middle" style={{ margin: '17px 0' }}>
+                  <Col span={2}>
+                    <img src={ImageCommon.telegram} style={{ width: '23px' }} />
+                  </Col>
+                  <Col span={8}>
+                    <Input
+                      placeholder="Telegram handler"
+                      onBlur={(e) => handleInputBlur({ telegram: e.target.value })}
+                      defaultValue={stepData.telegram}
+                      size="small"
+                    />
+                  </Col>
+                </Row>
+              </Form.Item>
+              <ProFormText
+                colProps={{ md: 12, xl: 8 }}
+                label="Total Supply"
+                width="md"
+                name="supply"
+                fieldProps={{
+                  onBlur: (e) => {
+                    handleInputBlur({ supply: e.target.value });
+                  },
                 }}
               />
-            </Form.Item>
+              <ProFormText
+                colProps={{ md: 12, xl: 8 }}
+                label="Max Amount per address"
+                width="md"
+                name="peraddress"
+                fieldProps={{
+                  onBlur: (e) => {
+                    handleInputBlur({ peraddress: e.target.value });
+                  },
+                }}
+              />
+              <ProFormSwitch
+                name="refundable"
+                fieldProps={{
+                  onChange: (e) => {
+                    handleInputBlur({ refundable: e });
+                  },
+                }}
+                label="Refundable"
+              />
+              <ProFormDateTimePicker
+                name="time"
+                label="Start Time"
+                fieldProps={{
+                  format: (value) => value.format('YYYY-MM-DD HH:mm:ss'),
+                  onChange: (value) =>
+                    handleInputBlur({ time: value?.format('YYYY-MM-DD HH:mm:ss') }),
+                }}
+              />
+            </div>
+          </StepsForm.StepForm>
 
-            {/* <Upload /> */}
-            <ProFormText
-              colProps={{ md: 12, xl: 8 }}
-              label="Project Name"
-              width="md"
-              name="name"
-              fieldProps={{
-                onBlur: (e) => {
-                  handleInputBlur({ name: e.target.value });
-                },
-              }}
-              rules={[{ required: true, message: '' }]}
-            />
-
-            <ProFormTextArea
-              label="Project Description"
-              width="md"
-              name="description"
-              fieldProps={{
-                onBlur: (e) => {
-                  handleInputBlur({ description: e.target.value });
-                },
-              }}
-            />
-            <ProFormSelect
-              options={[
-                {
-                  value: 'Ethereum',
-                  label: 'Ethereum'
-                },
-                {
-                  value: 'Moonbeam',
-                  label: 'Moonbeam',
-                },
-              ]}
-              rules={[{ required: true, message: '' }]}
-              fieldProps={{
-                onChange: (e) => {
-                  handleInputBlur({ chain: e });
-                },
-              }}
-              width="md"
-              name="chain"
-              placeholder="please select chain"
-              label="Operating Chain"
-            />
-            <ProFormText
-              label="Contract Address"
-              rules={[{ required: true, message: '' }]}
-              name="address"
-              fieldProps={{
-                onBlur: (e) => {
-                  handleInputBlur({ address: e.target.value });
-                },
-              }}
-              width="md"
-            />
-            <Form.Item label="Account Info">
-              <Row align="middle" style={{ margin: '8px 0' }}>
-                <Col span={2}>
-                  <img src={ImageCommon.website} style={{ width: '23px' }} />
-                </Col>
-                <Col span={8}>
-                  <Input
-                    onBlur={(e) => handleInputBlur({ website: e.target.value })}
-                    placeholder="website"
-                    name="website"
-                    size="small"
-                  />
-                </Col>
-              </Row>
-              <Row align="middle" style={{ margin: '17px 0' }}>
-                <Col span={2}>
-                  <img src={ImageCommon.twitter} style={{ width: '23px' }} />
-                </Col>
-                <Col span={8}>
-                  <Input
-                    placeholder="Twitter handler"
-                    onBlur={(e) => handleInputBlur({ twitter: e.target.value })}
-                    name="twitter"
-                    size="small"
-                  />
-                </Col>
-              </Row>
-              <Row align="middle" style={{ margin: '17px 0' }}>
-                <Col span={2}>
-                  <img src={ImageCommon.discord} style={{ width: '23px' }} />
-                </Col>
-                <Col span={8}>
-                  <Input
-                    placeholder="Discord username"
-                    onBlur={(e) => handleInputBlur({ discord: e.target.value })}
-                    name="discord"
-                    size="small"
-                  />
-                </Col>
-              </Row>
-              <Row align="middle" style={{ margin: '17px 0' }}>
-                <Col span={2}>
-                  <img src={ImageCommon.telegram} style={{ width: '23px' }} />
-                </Col>
-                <Col span={8}>
-                  <Input
-                    placeholder="Telegram handler"
-                    onBlur={(e) => handleInputBlur({ telegram: e.target.value })}
-                    name="telegram"
-                    size="small"
-                  />
-                </Col>
-              </Row>
-            </Form.Item>
-            <ProFormText
-              colProps={{ md: 12, xl: 8 }}
-              label="Total Supply"
-              width="md"
-              name="supply"
-              fieldProps={{
-                onBlur: (e) => {
-                  handleInputBlur({ supply: e.target.value });
-                },
-              }}
-            />
-            <ProFormText
-              colProps={{ md: 12, xl: 8 }}
-              label="Max Amount per address"
-              width="md"
-              name="peraddress"
-              fieldProps={{
-                onBlur: (e) => {
-                  handleInputBlur({ peraddress: e.target.value });
-                },
-              }}
-            />
-            <ProFormSwitch
-              name="refundable"
-              fieldProps={{
-                onChange: (e) => {
-                  handleInputBlur({ refundable: e });
-                },
-              }}
-              label="Refundable"
-            />
-            <ProFormDateTimePicker
-              name="time"
-              label="Start Time"
-              fieldProps={{
-                format: (value) => value.format('YYYY-MM-DD HH:mm:ss'),
-                onChange: (value) =>
-                  handleInputBlur({ time: value?.format('YYYY-MM-DD HH:mm:ss') }),
-              }}
-            />
-          </div>
-        </StepsForm.StepForm>
-
-        <StepsForm.StepForm title="Mint Function" layout={LAYOUT_TYPE_HORIZONTAL}>
-          <div className={styles.submit2}>
-            <ProFormList
-              name="users"
-              initialValue={stepData.functions}
-              itemRender={({ listDom }, { index }) => (
-                <Form.Item label={`function${index + 1}`}>
-                  {/* {listDom} */}
-                  <ProFormGroup>
-                    <div className={styles.submitOne}>
-                      <div className={styles.submitTitle}>Function Name</div>
-                      {/* <input name="name" /> */}
-                      <ProFormSelect
-                        name="name"
-                        placeholder="Name"
-                        options={ABIarry}
+          <StepsForm.StepForm title="Mint Function" layout={LAYOUT_TYPE_HORIZONTAL}>
+            <div className={styles.submit2}>
+              <ProFormList
+                name="users"
+                initialValue={stepData.functions}
+                itemRender={({ listDom }, { index }) => (
+                  <Form.Item label={`function${index + 1}`}>
+                    {/* {listDom} */}
+                    <ProFormGroup>
+                      <div className={styles.submitOne}>
+                        <div className={styles.submitTitle}>Function Name</div>
+                        {/* <input name="name" /> */}
+                        <ProFormSelect
+                          name="name"
+                          placeholder="Name"
+                          options={ABIarry}
+                          fieldProps={{
+                            onChange: (value, params) =>
+                              handleFunctionChange(index, 'name', value, params?.params),
+                          }}
+                        />
+                      </div>
+                    </ProFormGroup>
+                    <ProFormGroup>
+                      <div>
+                        <div className={styles.submitTitle}>Free Mint?</div>
+                        {/* <input name="name" /> */}
+                        <ProFormSwitch
+                          name="free"
+                          fieldProps={{
+                            onChange: (value) => handleFunctionBlue(index, 'free', value),
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <div className={styles.submitTitle}>Mint Price</div>
+                        {/* <input name="name" /> */}
+                        <ProFormDependency name={['free']}>
+                          {({ free }) => {
+                            return (
+                              <ProFormText
+                                disabled={!free}
+                                width={100}
+                                fieldProps={{
+                                  onBlur: (e) => {
+                                    handleFunctionBlue(index, 'price', e.target.value);
+                                  },
+                                }}
+                                name="price"
+                                placeholder="Input Price"
+                              />
+                            );
+                          }}
+                        </ProFormDependency>
+                        {/* <ProFormText width={100} name="price" placeholder="Input Price" /> */}
+                      </div>
+                      <div>
+                        <div className={styles.submitTitle}>For Mint Quantity</div>
+                        {/* <input name="name" /> */}
+                        <ProFormSelect
+                          width={110}
+                          name="param"
+                          options={stepData.functions[index]['paramsArray']}
+                          fieldProps={{
+                            onChange: (value) => handleFunctionBlue(index, 'param', value),
+                          }}
+                          placeholder="Param Name"
+                        />
+                      </div>
+                    </ProFormGroup>
+                    <div className={styles.submitDescription}>
+                      <ProFormTextArea
+                        name="description"
                         fieldProps={{
-                          onChange: (value, params) =>
-                            handleFunctionChange(index, 'name', value, params?.params),
+                          onBlur: (e) => {
+                            handleFunctionBlue(index, 'description', e.target.value);
+                          },
                         }}
+                        label="Function Description"
                       />
                     </div>
-                  </ProFormGroup>
-                  <ProFormGroup>
                     <div>
-                      <div className={styles.submitTitle}>Free Mint?</div>
+                      <div className={styles.submitTitle}>Restrict only for whitelister?</div>
                       {/* <input name="name" /> */}
                       <ProFormSwitch
-                        name="free"
                         fieldProps={{
-                          onChange: (value) => handleFunctionBlue(index, 'free', value),
+                          onChange: (value) => handleFunctionBlue(index, 'whitelister', value),
                         }}
+                        name="whitelister"
                       />
                     </div>
-                    <div>
-                      <div className={styles.submitTitle}>Mint Price</div>
-                      {/* <input name="name" /> */}
-                      <ProFormDependency name={['free']}>
-                        {({ free }) => {
-                          return (
-                            <ProFormText
-                              disabled={!free}
-                              width={100}
-                              fieldProps={{
-                                onBlur: (e) => {
-                                  handleFunctionBlue(index, 'price', e.target.value);
-                                },
-                              }}
-                              name="price"
-                              placeholder="Input Price"
-                            />
-                          );
-                        }}
-                      </ProFormDependency>
-                      {/* <ProFormText width={100} name="price" placeholder="Input Price" /> */}
-                    </div>
-                    <div>
-                      <div className={styles.submitTitle}>For Mint Quantity</div>
-                      {/* <input name="name" /> */}
-                      <ProFormSelect
-                        width={110}
-                        name="param"
-                        options={paramsArray}
-                        fieldProps={{
-                          onChange: (value) => handleFunctionBlue(index, 'param', value),
-                        }}
-                        placeholder="Param Name"
-                      />
-                    </div>
-                  </ProFormGroup>
-                  <div className={styles.submitDescription}>
-                    <ProFormTextArea
-                      name="description"
-                      fieldProps={{
-                        onBlur: (e) => {
-                          handleFunctionBlue(index, 'description', e.target.value);
+                  </Form.Item>
+                )}
+                creatorButtonProps={{
+                  creatorButtonText: 'Add More Functions',
+                }}
+                actionGuard={{
+                  beforeAddRow: async (defaultValue, insertIndex) => {
+                    return new Promise((resolve) => {
+                      stepData.functions = [
+                        ...stepData.functions,
+                        {
+                          name: '',
+                          free: false,
+                          price: '',
+                          param: '',
+                          description: '',
+                          whitelister: false,
                         },
-                      }}
-                      label="Function Description"
-                    />
-                  </div>
-                  <div>
-                    <div className={styles.submitTitle}>Restrict only for whitelister?</div>
-                    {/* <input name="name" /> */}
-                    <ProFormSwitch
-                      fieldProps={{
-                        onChange: (value) => handleFunctionBlue(index, 'whitelister', value),
-                      }}
-                      name="whitelister"
-                    />
-                  </div>
-                </Form.Item>
-              )}
-              creatorButtonProps={{
-                creatorButtonText: 'Add More Functions',
-              }}
-              actionGuard={{
-                beforeAddRow: async (defaultValue, insertIndex) => {
-                  return new Promise((resolve) => {
-                    stepData.functions = [
-                      ...stepData.functions,
-                      {
-                        name: '',
-                        free: false,
-                        price: '',
-                        param: '',
-                        description: '',
-                        whitelister: false,
-                      },
-                    ];
-                    setTimeout(() => resolve(true), 1000);
-                  });
-                },
-              }}
-            />
-          </div>
-          <div></div>
-        </StepsForm.StepForm>
-        <div className={styles.stepUp3}></div>
-        <StepsForm.StepForm title="Check & Submit"></StepsForm.StepForm>
-      </StepsForm>
-      <div className={styles.stepHeight}></div>
-      <div className={current === 2 ? styles.submitReactPreviewLast : styles.submitReactPreview}>
-        {current != 2 && (<div className={styles.Previewtext}>Preview</div>)}
-        <ReactPreview isComponent={true} data={stepData} />
-        {current === 2 && (
-          <div className={styles.stepUp3div}>
-            <Button onClick={() => setCurrent(1)}>save</Button>
-            <Button
-              type="primary"
-              className={styles.stepUp3button}
-              loading={loading}
-              onClick={upIpfs}
-            >
-              Check & Submit
-            </Button>
-          </div>
-        )}
-      </div>
-      {/* <Divider style={{ margin: '40px 0 24px' }} /> */}
-    </Card>
+                      ];
+                      setTimeout(() => resolve(true), 1000);
+                    });
+                  },
+                }}
+              />
+            </div>
+            <div></div>
+          </StepsForm.StepForm>
+          <div className={styles.stepUp3}></div>
+          <StepsForm.StepForm title="Check & Submit"></StepsForm.StepForm>
+        </StepsForm>
+        <div className={styles.stepHeight}></div>
+        <div className={current === 2 ? styles.submitReactPreviewLast : styles.submitReactPreview}>
+          {current != 2 && (<div className={styles.Previewtext}>Preview</div>)}
+          <ReactPreview isComponent={true} data={stepData} />
+          {current === 2 && (
+            <div className={styles.stepUp3div}>
+              <Button onClick={() => saveCurrent(1)}>save</Button>
+              <Button
+                type="primary"
+                className={styles.stepUp3button}
+                loading={loading}
+                onClick={upIpfs}
+              >
+                Check & Submit
+              </Button>
+            </div>
+          )}
+        </div>
+        {/* <Divider style={{ margin: '40px 0 24px' }} /> */}
+      </Card >
+    ) : (
+      <Card className={styles.ConnectCard} bordered={false} >
+        <h3>{`Welcome to SafeMint`}</h3>
+        <ConnectButton onClick={onLoade} />
+      </Card>
+    )
   );
 };
 

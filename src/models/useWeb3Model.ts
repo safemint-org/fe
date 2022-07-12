@@ -24,7 +24,6 @@ const useWeb3Model = () => {
   const [connection, setconnection] = useState({
     ...INITIAL_STATE,
   });
-
   return {
     connection,
     setconnection,
