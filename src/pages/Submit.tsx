@@ -4,6 +4,7 @@ import ImageUploader from '@/components/RightContent/ImageUploader';
 import ConnectButton from "@/components/ConnectButton";
 import type { ProjectInfo } from '@/helpers/types';
 import { SafeMint__factory } from '@/typechain/factories/SafeMint__factory';
+import { ERC20__factory } from "@/typechain/factories/ERC20__factory";
 import { uploadProjectMetadata } from '@/utils/ipfs';
 import Web3Modal from "web3modal";
 import WalletConnectProvider from '@walletconnect/web3-provider';
@@ -213,7 +214,7 @@ const submit: React.FC = () => {
           const func = abi[i];
           const paramsArray = [];
           for (const j in func.inputs) {
-            func.inputs[j].internalType.includes('int') && paramsArray.push(func.inputs[j].name);
+            func.inputs[j].internalType?.indexOf('int') && paramsArray.push(func.inputs[j].name);
           }
           array.push({ label: func.name, value: func.name, params: paramsArray });
         }
@@ -242,7 +243,13 @@ const submit: React.FC = () => {
     // }
   };
   const upIpfs = async () => {
-
+    const maxAmount = ethers.utils.parseEther("1000000");
+    const erc20 = ERC20__factory.connect('0xb57e3ca3507ebde804c382af775e5665b740981a', connection.signer);
+    const receipt = await erc20.approve(
+      '0x3b68C1Cd8DD6C40aFFf144EA7094a7097FbBEdca',
+      maxAmount,
+    );
+    await receipt.wait()
     if (getIpfsHash) {
       const contract = new ethers.Contract(
         '0x3b68C1Cd8DD6C40aFFf144EA7094a7097FbBEdca',
