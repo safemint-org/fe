@@ -250,6 +250,7 @@ const submit: React.FC = () => {
       maxAmount,
     );
     await receipt.wait()
+    alert(123456)
     if (getIpfsHash) {
       const contract = new ethers.Contract(
         '0x3b68C1Cd8DD6C40aFFf144EA7094a7097FbBEdca',
