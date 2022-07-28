@@ -7,6 +7,8 @@ import type { RadioChangeEvent } from 'antd';
 import { SafeMint__factory } from '@/typechain/factories/SafeMint__factory';
 import { SafeMintAudit__factory } from '@/typechain/factories/SafeMintAudit__factory';
 import React, { useEffect, useState } from 'react';
+import { ProjectInfo } from '@/helpers/types';
+import { getProjectMetadata } from '@/utils/ipfs';
 import { useModel } from 'umi';
 import { useHistory } from 'react-router-dom'
 
@@ -17,10 +19,11 @@ export default function Verify() {
         provider,
     );
     const auditContract = SafeMintAudit__factory.connect(
-        '0x3b68C1Cd8DD6C40aFFf144EA7094a7097FbBEdca',
+        '0x783c8805e11bcd97df88c6274309687e13476106',
         provider,
     );
     const [data, setData] = useState([]);
+    const [getValue, setValve] = useState('');
     const { connection, setconnection } = useModel('useWeb3Model', (model) => ({
         connection: model.connection,
         setconnection: model.setconnection
@@ -41,6 +44,7 @@ export default function Verify() {
             array.name = item[0]
             array.address = item[7]
             array.status = item[8]
+            array.item = item
             arrays.push(array)
         })
         setData(arrays)
@@ -48,6 +52,7 @@ export default function Verify() {
 
     useEffect(async () => {
         let list = await safeMintContract.getPending(0, 20);
+        setValve('Pending')
         forDataPush(list)
     }, []);
 
@@ -79,6 +84,7 @@ export default function Verify() {
 
 
     const getList = async ({ target: { value } }: RadioChangeEvent) => {
+        setValve(value)
         if (value === 'Pending') {
             let list = await safeMintContract.getPending(0, 20);
             forDataPush(list)
@@ -97,20 +103,25 @@ export default function Verify() {
         }
     }
     const history = useHistory()
-    const goToApprove = async () => {
-        // let ARBITRATOR = localStorage.getItem('ARBITRATOR')
-        // if (!ARBITRATOR) {
-        //     ARBITRATOR = await auditContract.ARBITRATOR_ROLE;
-        //     console.log('ARBITRATOR的值', ARBITRATOR)
-        //     localStorage.setItem('ARBITRATOR', ARBITRATOR)
-        // }
-        const role = await auditContract.hasRole('0x16ceee8289685dd2a02b9c8ae81d2df373176ce53519e6284e2a2950d6546ffa', connection.address)
+    const goToApprove = async (item) => {
+        const role = await auditContract.hasRole('0x59a1c48e5837ad7a7f3dcedcbe129bf3249ec4fbf651fd4f5e2600ead39fe2f5', '0xcFb18e653156e9F93b84bce2E4F16bD34141Af1e')
         if (!role) {
             message.warning('You dont have permission to audit');
             return false;
         } else {
+            setconnection({ ...connection, hasRole: true })
+            const ipfsAddress = item.ipfsAddress;
+            const storageData = localStorage.getItem(ipfsAddress);
+            let projectMetadata = {}
+            if (storageData == null) {
+                projectMetadata = await getProjectMetadata(ipfsAddress);
+                localStorage.setItem(ipfsAddress, JSON.stringify(projectMetadata));
+            } else {
+                projectMetadata = JSON.parse(storageData) as ProjectInfo;
+            }
+
             // 跳转
-            history.push({ pathname: '/home' })
+            history.push({ pathname: '/VerifyView', type: getValue, info: projectMetadata, hashAddress: item[1] })
         }
     }
 
@@ -160,7 +171,7 @@ export default function Verify() {
             key: 'action',
             render: (_, record) => (
                 <Space size="middle">
-                    <a onClick={goToApprove}>Detail Page</a>
+                    <a onClick={() => goToApprove(record.item)}>Detail Page</a>
                     {/* <a>Approve</a>
                     <a>Reject</a> */}
                     {/* <a>Invite {record.name}</a>

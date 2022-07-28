@@ -2,7 +2,7 @@ import ImageCommon from '@/assets/common';
 import { BaseInput, FlexViewCenter } from '@/components/Common';
 import type { ProjectInfo } from '@/helpers/types';
 import { autoWidthVW, ellipseAddress } from '@/utils/utils';
-import { Col, Image, Row } from 'antd';
+import { Col, Image, Row,Modal } from 'antd';
 import styled from 'styled-components';
 
 const styles = require('./index.less');
@@ -12,7 +12,7 @@ export interface IPreview {
 }
 
 const ReactPreview: React.FC<IPreview> = (props) => {
-  const { isComponent, data } = props;
+  const { isComponent, data,children } = props;
   console.log(data);
   return (
     <Row style={{ background: '#FFFFFF' }}>
@@ -118,7 +118,6 @@ const ReactPreview: React.FC<IPreview> = (props) => {
                 </div>
               );
             })}
-
             {/* <div>
               <FuncName>BanaceOf</FuncName>
               <FuncDesc>Function description is here. Function description is here.</FuncDesc>
@@ -136,6 +135,7 @@ const ReactPreview: React.FC<IPreview> = (props) => {
             </div> */}
           </MainContent>
         </Content>
+        {props.children}
       </Col>
     </Row>
   );

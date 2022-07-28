@@ -8,6 +8,7 @@ interface IAppState {
   connected: boolean;
   chainId: number;
   networkId: number;
+  hasRole: boolean;
 }
 
 const INITIAL_STATE: IAppState = {
@@ -18,6 +19,7 @@ const INITIAL_STATE: IAppState = {
   connected: false,
   chainId: 4,
   networkId: 1,
+  hasRole: false,
 };
 
 const useWeb3Model = () => {

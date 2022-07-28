@@ -15,6 +15,13 @@
     component: './Verify',
   },
   {
+    hideInMenu: true,
+    path: '/VerifyView',
+    name: 'VerifyView',
+    component: './VerifyView',
+    // wrappers: ['@/wrappers/hasRole'],
+  },
+  {
     path: '/explore',
     name: 'explore',
     component: './Explore',
