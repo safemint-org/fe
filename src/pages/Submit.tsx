@@ -74,6 +74,7 @@ const StepDescriptions: React.FC<{
 };
 
 const submit: React.FC = () => {
+  let isSave = history?.location.isSave ?? false;
   const storageData = localStorage.getItem('safe-mint-dao');
   const { connection, setconnection } = useModel('useWeb3Model', (model) => ({
     connection: model.connection,
@@ -250,27 +251,44 @@ const submit: React.FC = () => {
       maxAmount,
     );
     await receipt.wait()
-    alert(123456)
     if (getIpfsHash) {
-      const contract = new ethers.Contract(
+      const contract = SafeMint__factory.connect(
         '0x3b68C1Cd8DD6C40aFFf144EA7094a7097FbBEdca',
-        SafeMint__factory.abi,
         connection.signer,
       );
+      // const contract = new ethers.Contract(
+      //   '0x3b68C1Cd8DD6C40aFFf144EA7094a7097FbBEdca',
+      //   SafeMint__factory.abi,
+      //   connection.signer,
+      // );
       try {
-        const data = await contract.saveProject(
-          stepData.name,
-          stepData.address,
-          0,
-          20,
-          getIpfsHash,
-        );
-        message.success('上传成功');
-        // 清空
-        localStorage.setItem('safe-mint-dao', '');
-        history.push({ pathname: '/home' })
+        if (!isSave) {
+          const data = await contract.saveProject(
+            stepData.name,
+            stepData.address,
+            stepData.time,
+            new Date().getTime() / 1000,
+            getIpfsHash,
+          );
+          message.success('上传成功');
+          // 清空
+          localStorage.setItem('safe-mint-dao', '');
+          history.push({ pathname: '/home' })
+        } else {
+          // 修改项目
+          const data = await contract.editProject(
+            stepData.name,
+            stepData.time,
+            new Date().getTime() / 1000,
+            getIpfsHash)
+          message.success('修改成功');
+          // 清空
+          localStorage.setItem('safe-mint-dao', '');
+          history.push({ pathname: '/home' })
+        }
       } catch (err) {
         console.log('Error: ', err);
+        message.error('上传失败')
       }
     }
   };
@@ -536,7 +554,8 @@ const submit: React.FC = () => {
                 fieldProps={{
                   format: (value) => value.format('YYYY-MM-DD HH:mm:ss'),
                   onChange: (value) =>
-                    handleInputBlur({ time: value?.format('YYYY-MM-DD HH:mm:ss') }),
+                    //handleInputBlur({ time: value?.format('YYYY-MM-DD HH:mm:ss') }),
+                    handleInputBlur({ time: (value?.valueOf()) / 1000 }),
                 }}
               />
             </div>
