@@ -76,6 +76,7 @@ const StepDescriptions: React.FC<{
 const submit: React.FC = () => {
   let isSave = history?.location.isSave ?? false;
   const storageData = localStorage.getItem('safe-mint-dao');
+  //const storageData = null;
   const { connection, setconnection } = useModel('useWeb3Model', (model) => ({
     connection: model.connection,
     setconnection: model.setconnection
@@ -169,6 +170,7 @@ const submit: React.FC = () => {
         supply: '',
         peraddress: '',
         time: moment().format('YYYY-MM-DD HH:mm:ss'),
+        //time: parseInt(moment().valueOf() / 1000),
         refundable: false,
         functions: [{
           "name": "",
@@ -262,12 +264,14 @@ const submit: React.FC = () => {
       //   connection.signer,
       // );
       try {
+        let date = new Date(stepData.time);
+        console.log('stepData.time', parseInt(date.valueOf() / 1000), parseInt(new Date().getTime() / 1000))
         if (!isSave) {
           const data = await contract.saveProject(
             stepData.name,
             stepData.address,
-            stepData.time,
-            new Date().getTime() / 1000,
+            parseInt(date.valueOf() / 1000),
+            parseInt(new Date().getTime() / 1000),
             getIpfsHash,
           );
           message.success('上传成功');
@@ -278,8 +282,8 @@ const submit: React.FC = () => {
           // 修改项目
           const data = await contract.editProject(
             stepData.name,
-            stepData.time,
-            new Date().getTime() / 1000,
+            parseInt(date.valueOf() / 1000),
+            parseInt(new Date().getTime() / 1000),
             getIpfsHash)
           message.success('修改成功');
           // 清空
@@ -554,8 +558,8 @@ const submit: React.FC = () => {
                 fieldProps={{
                   format: (value) => value.format('YYYY-MM-DD HH:mm:ss'),
                   onChange: (value) =>
-                    //handleInputBlur({ time: value?.format('YYYY-MM-DD HH:mm:ss') }),
-                    handleInputBlur({ time: (value?.valueOf()) / 1000 }),
+                    handleInputBlur({ time: value?.format('YYYY-MM-DD HH:mm:ss') }),
+                  //handleInputBlur({ time: parseInt((value?.valueOf() / 1000)) }),
                 }}
               />
             </div>

@@ -80,11 +80,31 @@ export default function Verify() {
     //     },
 
     // ];
+    const router = useHistory()
 
-
-
+    const ReSetProject = async (item, address) => {
+        // 校验钱包地址是否相等
+        if (item[1] != address) {
+            message.error('无权限');
+            return false;
+        }
+        const ipfsAddress = item.ipfsAddress;
+        const storageData = localStorage.getItem(ipfsAddress);
+        let projectMetadata = {}
+        if (storageData == null) {
+            projectMetadata = await getProjectMetadata(ipfsAddress);
+            localStorage.setItem(ipfsAddress, JSON.stringify(projectMetadata));
+        } else {
+            projectMetadata = JSON.parse(storageData) as ProjectInfo;
+        }
+        // 覆盖
+        localStorage.setItem('safe-mint-dao', JSON.stringify(projectMetadata));
+        // 跳转
+        router.push({ pathname: '/Submit', isSave: true })
+    }
     const getList = async ({ target: { value } }: RadioChangeEvent) => {
         setValve(value)
+        setData([])
         if (value === 'Pending') {
             let list = await safeMintContract.getPending(0, 20);
             forDataPush(list)
@@ -104,7 +124,7 @@ export default function Verify() {
     }
     const history = useHistory()
     const goToApprove = async (item) => {
-        const role = await auditContract.hasRole('0x59a1c48e5837ad7a7f3dcedcbe129bf3249ec4fbf651fd4f5e2600ead39fe2f5', '0xcFb18e653156e9F93b84bce2E4F16bD34141Af1e')
+        const role = await auditContract.hasRole('0x59a1c48e5837ad7a7f3dcedcbe129bf3249ec4fbf651fd4f5e2600ead39fe2f5', connection.address)
         if (!role) {
             message.warning('You dont have permission to audit');
             return false;
@@ -172,6 +192,7 @@ export default function Verify() {
             render: (_, record) => (
                 <Space size="middle">
                     <a onClick={() => goToApprove(record.item)}>Detail Page</a>
+                    {getValue === 'Reject' ? <a onClick={() => ReSetProject(record.item, connection.address)}>Reset</a> : ''}
                     {/* <a>Approve</a>
                     <a>Reject</a> */}
                     {/* <a>Invite {record.name}</a>
